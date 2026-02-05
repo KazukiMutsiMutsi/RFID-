@@ -1,0 +1,455 @@
+:root {
+  /* Softer brand palette for reduced eye strain */
+  --brand-maroon: #8b3b3b; /* softer brick-maroon */
+  --brand-maroon-2: #6e2b2b; /* darker variant for subtle depth */
+  --brand-gold: #e6c57a; /* muted gold */
+  --bg: #fbfbfb; /* very light, warm background */
+  --text-dark: #1f2933; /* softer dark for long-form text */
+  --text-on-dark: #fffaf6; /* warm off-white for dark backgrounds */
+  --muted: rgba(31,41,34,0.65);
+  --muted-on-dark: rgba(255,250,245,0.88);
+  --focus-ring: rgba(230,184,100,0.9);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hero {
+  /* gradient overlay kept; background image is animated via ::before for smooth transforms */
+  background-image: linear-gradient(180deg, rgba(139,59,59,0.06), rgba(230,197,122,0.025)); /* softer maroon/gold wash */
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  position: relative;
+  color: white;
+  overflow: hidden;
+}
+
+/* animated background layer (kept separate to allow transforms without affecting text) */
+:root {
+  --hero-blur: 8px; /* changeable blur value */
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Use a hero photo placed at /public/hero-photo.jpg (add your image there) */
+  background-image: url('/hero-photo.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
+  transform-origin: center;
+  will-change: transform, filter, background-position;
+  animation: floatBg 12s ease-in-out infinite, panBg 40s linear infinite;
+
+  /* visual treatment */
+  filter: blur(var(--hero-blur)) saturate(0.95) contrast(0.95);
+  transform: scale(1.03); /* scale slightly to hide blurred edges */
+}
+
+/* reduce blur on small screens for performance */
+@media (max-width: 600px) {
+  :root { --hero-blur: 5px; }
+}
+
+/* subtle vignette to match reference (darkened to improve contrast on photo) */
+.hero::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.18) 35%, rgba(0,0,0,0.55) 100%); /* slightly lighter for comfort */
+}
+
+.heroContent {
+  position: relative;
+  z-index: 3; /* sit above background and vignette */
+  max-width: 900px;
+  margin-left: auto; /* push content to the right */
+  margin-right: 4rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  animation: fadeInUp 1s ease-out;
+}
+
+/* logo graphic on the left of hero */
+.heroVisual {
+  position: absolute;
+  left: 56px;
+  bottom: 40px;
+  z-index: 3;
+  width: 360px;
+  height: 360px;
+  display: block;
+  transform-origin: center;
+  animation: floatLeft 8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.bcLogo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.32));
+  transition: transform 0.4s ease, filter 0.4s ease;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(139,59,59,0.08);
+}
+
+.heroVisual:hover .bcLogo,
+.bcLogo:hover {
+  transform: translateY(-8px) rotate(-2deg) scale(1.02);
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.5));
+}
+
+@keyframes floatLeft {
+  0% { transform: translateY(0) rotate(-1deg); }
+  25% { transform: translateY(-8px) rotate(1deg); }
+  50% { transform: translateY(-12px) rotate(-1deg); }
+  75% { transform: translateY(-8px) rotate(1deg); }
+  100% { transform: translateY(0) rotate(-1deg); }
+}
+
+@media (max-width: 900px) {
+  .heroVisual { display: none; }
+}
+/* staggered entrances for title / subtitle / CTAs */
+.logo {
+  animation: fadeInUp 0.8s ease-out both;
+  animation-delay: 0.15s;
+}
+
+.hero-title,
+.heroTitle {
+  animation: slideInLeft 0.95s cubic-bezier(.22,.9,.35,1) both;
+  animation-delay: 0.3s;
+}
+
+.hero-subtitle,
+.heroSubtitle {
+  animation: slideInRight 0.95s cubic-bezier(.22,.9,.35,1) both;
+  animation-delay: 0.55s;
+}
+
+.heroCtas {
+  animation: fadeIn 0.9s ease-out both;
+  animation-delay: 0.85s;
+}
+
+/* small pop for the highlighted word */
+.hero-title .highlight,
+.heroTitle .highlight {
+  display: inline-block;
+  transform-origin: center;
+  animation: pop 0.9s cubic-bezier(.2,.9,.3,1) both;
+  animation-delay: 0.45s;
+}
+
+/* big bold title */
+.hero-title,
+.heroTitle {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 4rem;
+  line-height: 1.02; /* slightly increased for readability */
+  margin: 0 0 0.5rem 0;
+  color: var(--text-on-dark);
+  text-transform: uppercase;
+  font-weight: 900;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.02);
+  animation: slideInLeft 1.2s ease-out;
+}
+
+.hero-subtitle,
+.heroSubtitle {
+  font-size: 1.25rem;
+  margin-bottom: 1.4rem;
+  color: var(--muted-on-dark);
+  font-weight: 700;
+  animation: slideInRight 1.4s ease-out;
+}
+
+.heroCtas,
+.heroCtas {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.ctaPrimary {
+  background: linear-gradient(180deg,var(--brand-maroon),var(--brand-maroon-2));
+  color: white;
+  padding: 12px 28px;
+  border-radius: 30px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(28,28,28,0.18);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ctaPrimary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(28,28,28,0.2);
+}
+
+/* Accessible focus styles */
+.ctaPrimary:focus-visible,
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--focus-ring);
+  border-radius: 8px;
+}
+
+.ctaPrimary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+}
+
+/* keep existing hero button style but smaller when used as secondary CTA */
+.btn {
+  padding: 10px 18px;
+  border-radius: 20px;
+}
+
+
+.logo {
+  font-weight: 900;
+  color: var(--brand-gold);
+  margin-bottom: 1rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+}
+
+.heroTitle {
+  font-size: 2.25rem;
+  color: var(--text-on-dark);
+  margin: 0.5rem 0;
+}
+
+.highlight {
+  color: var(--brand-gold);
+  font-weight: 900;
+  text-shadow: 0 4px 18px rgba(248,194,46,0.35);
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 4px;
+}
+
+.heroSubtitle {
+  color: var(--muted-on-dark);
+  margin-bottom: 1.25rem;
+}
+
+.btn {
+  background: rgba(139,59,59,0.06); /* very soft fill */
+  color: var(--brand-maroon);
+  border: 1px solid rgba(139,59,59,0.08);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: rgba(139,59,59,0.09);
+}
+
+.loginSection {
+  padding: 3rem 0;
+}
+
+.loginForm {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.loginForm input {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+/* --- Additional non-color rules & animations (safe merge) --- */
+/* Added hyphenated selectors to avoid conflicts while preserving existing colors */
+
+/* container animation (no color changes) */
+.container {
+  animation: fadeInUp 1s ease-out;
+}
+
+/* support hyphenated and camelCase hero title/subtitle */
+.hero-title,
+.heroTitle {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  animation: slideInLeft 1.2s ease-out;
+}
+
+.hero-subtitle,
+.heroSubtitle {
+  font-size: 1.2rem;
+  margin-bottom: 40px;
+  animation: slideInRight 1.4s ease-out;
+}
+
+/* keep existing button colors, add micro-interactions only */
+.btn {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeIn 1.6s ease-out;
+}
+
+.btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* login section layout (no background color override) */
+.login-section,
+.loginSection {
+  padding: 50px 20px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-section h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-form,
+.loginForm {
+  max-width: 400px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
+}
+
+.login-form input,
+.loginForm input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.login-form button,
+.loginForm button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-form button:hover,
+.loginForm button:hover {
+  transform: translateY(-2px);
+}
+
+/* Animations (safe - no colors changed) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* background float & pan */
+@keyframes floatBg {
+  0% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.02) translateY(-12px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+@keyframes panBg {
+  0% { background-position: 50% 50%; }
+  50% { background-position: 45% 52%; }
+  100% { background-position: 50% 50%; }
+}
+
+/* highlight pop */
+@keyframes pop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
