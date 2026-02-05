@@ -1,11 +1,10 @@
 :root {
-  /* Softer brand palette for reduced eye strain */
-  --brand-maroon: #8b3b3b; /* softer brick-maroon */
-  --brand-maroon-2: #6e2b2b; /* darker variant for subtle depth */
-  --brand-gold: #e6c57a; /* muted gold */
-  --bg: #fbfbfb; /* very light, warm background */
-  --text-dark: #1f2933; /* softer dark for long-form text */
-  --text-on-dark: #fffaf6; /* warm off-white for dark backgrounds */
+  --brand-maroon: #8b3b3b; 
+  --brand-maroon-2: #6e2b2b; 
+  --brand-gold: #e6c57a; 
+  --bg: #fbfbfb; 
+  --text-dark: #1f2933; 
+  --text-on-dark: #fffaf6; 
   --muted: rgba(31,41,34,0.65);
   --muted-on-dark: rgba(255,250,245,0.88);
   --focus-ring: rgba(230,184,100,0.9);
@@ -18,7 +17,6 @@
 }
 
 .hero {
-  /* gradient overlay kept; background image is animated via ::before for smooth transforms */
   background-image: linear-gradient(180deg, rgba(139,59,59,0.06), rgba(230,197,122,0.025)); /* softer maroon/gold wash */
   padding: 0;
   height: 100vh;
@@ -30,9 +28,9 @@
   overflow: hidden;
 }
 
-/* animated background layer (kept separate to allow transforms without affecting text) */
+
 :root {
-  --hero-blur: 8px; /* changeable blur value */
+  --hero-blur: 8px; 
 }
 
 .hero::before {
@@ -40,7 +38,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  /* Use a hero photo placed at /public/hero-photo.jpg (add your image there) */
+  
   background-image: url('/hero-photo.jpg');
   background-size: cover;
   background-position: center;
@@ -50,17 +48,16 @@
   will-change: transform, filter, background-position;
   animation: floatBg 12s ease-in-out infinite, panBg 40s linear infinite;
 
-  /* visual treatment */
   filter: blur(var(--hero-blur)) saturate(0.95) contrast(0.95);
-  transform: scale(1.03); /* scale slightly to hide blurred edges */
+  transform: scale(1.03); 
 }
 
-/* reduce blur on small screens for performance */
+
 @media (max-width: 600px) {
   :root { --hero-blur: 5px; }
 }
 
-/* subtle vignette to match reference (darkened to improve contrast on photo) */
+
 .hero::after {
   content: '';
   pointer-events: none;
@@ -72,16 +69,16 @@
 
 .heroContent {
   position: relative;
-  z-index: 3; /* sit above background and vignette */
+  z-index: 3; 
   max-width: 900px;
-  margin-left: auto; /* push content to the right */
+  margin-left: auto; 
   margin-right: 4rem;
   padding: 4rem 2rem;
   text-align: center;
   animation: fadeInUp 1s ease-out;
 }
 
-/* logo graphic on the left of hero */
+
 .heroVisual {
   position: absolute;
   left: 56px;
@@ -125,7 +122,7 @@
 @media (max-width: 900px) {
   .heroVisual { display: none; }
 }
-/* staggered entrances for title / subtitle / CTAs */
+
 .logo {
   animation: fadeInUp 0.8s ease-out both;
   animation-delay: 0.15s;
@@ -148,7 +145,7 @@
   animation-delay: 0.85s;
 }
 
-/* small pop for the highlighted word */
+
 .hero-title .highlight,
 .heroTitle .highlight {
   display: inline-block;
@@ -157,12 +154,12 @@
   animation-delay: 0.45s;
 }
 
-/* big bold title */
+
 .hero-title,
 .heroTitle {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 4rem;
-  line-height: 1.02; /* slightly increased for readability */
+  line-height: 1.02; 
   margin: 0 0 0.5rem 0;
   color: var(--text-on-dark);
   text-transform: uppercase;
@@ -205,7 +202,7 @@
   box-shadow: 0 10px 24px rgba(28,28,28,0.2);
 }
 
-/* Accessible focus styles */
+
 .ctaPrimary:focus-visible,
 .btn:focus-visible {
   outline: none;
@@ -218,7 +215,7 @@
   box-shadow: 0 14px 30px rgba(0,0,0,0.35);
 }
 
-/* keep existing hero button style but smaller when used as secondary CTA */
+
 .btn {
   padding: 10px 18px;
   border-radius: 20px;
@@ -256,7 +253,7 @@
 }
 
 .btn {
-  background: rgba(139,59,59,0.06); /* very soft fill */
+  background: rgba(139,59,59,0.06); 
   color: var(--brand-maroon);
   border: 1px solid rgba(139,59,59,0.08);
   padding: 0.6rem 1.2rem;
@@ -290,15 +287,14 @@
   font-size: 0.9rem;
 }
 
-/* --- Additional non-color rules & animations (safe merge) --- */
-/* Added hyphenated selectors to avoid conflicts while preserving existing colors */
 
-/* container animation (no color changes) */
+
+
 .container {
   animation: fadeInUp 1s ease-out;
 }
 
-/* support hyphenated and camelCase hero title/subtitle */
+
 .hero-title,
 .heroTitle {
   font-size: 3rem;
@@ -313,7 +309,7 @@
   animation: slideInRight 1.4s ease-out;
 }
 
-/* keep existing button colors, add micro-interactions only */
+
 .btn {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeIn 1.6s ease-out;
@@ -324,7 +320,7 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* login section layout (no background color override) */
+
 .login-section,
 .loginSection {
   padding: 50px 20px;
@@ -373,7 +369,7 @@
   transform: translateY(-2px);
 }
 
-/* Animations (safe - no colors changed) */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -434,7 +430,7 @@
   }
 }
 
-/* background float & pan */
+
 @keyframes floatBg {
   0% { transform: scale(1) translateY(0); }
   50% { transform: scale(1.02) translateY(-12px); }
@@ -447,7 +443,7 @@
   100% { background-position: 50% 50%; }
 }
 
-/* highlight pop */
+
 @keyframes pop {
   from { transform: scale(0.85); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
