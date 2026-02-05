@@ -1,0 +1,74 @@
+/* Simple dashboard styles for tables and cards */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.nav {
+  display: flex;
+  gap: 10px;
+}
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.card {
+  padding: 16px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+.table th,
+.table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #eef2f5;
+  font-size: 14px;
+}
+.table th {
+  background: #fafafa;
+  font-weight: 700;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+}
+.btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: var(--brand-maroon);
+  color: white;
+}
+.btn.secondary {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.06);
+  color: var(--brand-maroon);
+}
+.search {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e6eef3;
+}
+.small {
+  font-size: 13px;
+  color: var(--muted);
+}
