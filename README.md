@@ -1,41 +1,51 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RFID-BC
 
-## Getting Started
+RFID tracking dashboard built with Next.js and PostgreSQL (via Prisma).
 
-First, run the development server:
+## Installation (before pulling the repo)
 
+1. Install prerequisites
+   - Node.js 18+ (or 20+)
+   - PostgreSQL 14+
+
+2. Clone the repo
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <YOUR_REPO_URL>
+cd rfid-bc
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Install dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. Set up environment variables
+   - Copy `.env` and update the database URL:
+```bash
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/rfid_bc?schema=public"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5. Generate Prisma client
+```bash
+npx prisma generate
+```
 
-## Learn More
+6. Create database schema
+```bash
+npx prisma migrate dev --name init
+```
 
-To learn more about Next.js, take a look at the following resources:
+7. Run the dev server
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open `http://localhost:3000` to view the app.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# RFID-
-frame work is nest.js 
->>>>>>> 293b0f8f012008841271ac8e8ca26fd3675aa7d6
+- If you change Prisma models, re-run:
+```bash
+npx prisma migrate dev
+```
+- The Prisma client is generated to `app/generated/prisma`.

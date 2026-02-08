@@ -1,88 +1,71 @@
-"use client";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import React from "react";
+import AttendanceSummary from "./components/AttendanceSummary";
+import DoorStatusGrid from "./components/DoorStatusGrid";
 import styles from "./styles.module.css";
-import { useDashboard } from "./context/DashboardContext";
+import Link from "next/link";
+import { headers } from "next/headers";
 
-export default function Dashboard() {
-  const router = useRouter();
-  const { workers, tags } = useDashboard();
+export const dynamic = "force-dynamic";
 
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    router.replace("/");
-  };
+function getBaseUrl() {
+  try {
+    const h = Object.fromEntries(headers());
+    const protocol = (h["x-forwarded-proto"] as string) || "http";
+    const host = (h["x-forwarded-host"] as string) || (h["host"] as string) || "localhost:3000";
+    return `${protocol}://${host}`;
+  } catch {
+    return process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  }
+}
+
+async function getCounts(path: string) {
+  const base = process.env.NEXT_PUBLIC_BASE_URL || getBaseUrl();
+  const res = await fetch(`${base}${path}`, { cache: "no-store" });
+  const json = await res.json();
+  return { total: json.total ?? (json.data?.length ?? 0) };
+}
+
+export default async function DashboardPage() {
+  // In real app fetch from separate count endpoints; here we call list endpoints and read total
+  const [{ total: studentsTotal }, { total: workersTotal }] = await Promise.all([
+    getCounts("/api/students"),
+    getCounts("/api/workers"),
+  ]);
 
   return (
-    <main className={styles.container}>
-      <div className={styles.header}>
-        <div>
-          <h1>Admin Dashboard</h1>
-          <p className={styles.small}>Worker attendance and RFID management</p>
-        </div>
-        <div className={styles.nav}>
-          <Link href="/dashboard/workers" className="btn">Workers</Link>
-          <Link href="/dashboard/tags" className="btn">Tags</Link>
-          <Link href="/dashboard/reports" className="btn">Reports</Link>
-          <button onClick={handleLogout} className="btn secondary">Logout</button>
-        </div>
-      </div>
+    <main className={styles.dashboard}>
+      <h1 style={{ fontSize: 28, fontWeight: 800 }}>Overview</h1>
 
-      <div className={styles.cardGrid}>
+      <section className={styles.grid + " cols-3"}>
         <div className={styles.card}>
-          <h3>Today's Attendance</h3>
-          <p><strong>Present:</strong> {workers.filter(w => w.status === "Present").length} / {workers.length}</p>
-          <p className={styles.small}>Real-time updates as workers scan their tags.</p>
-        </div>
-
-        <div className={styles.card}>
-          <h3>Registered Tags</h3>
-          <p><strong>Active:</strong> {tags.filter(t => t.status === "Active").length}</p>
-          <p className={styles.small}>Active tags and reader status.</p>
-        </div>
-
-        <div className={styles.card}>
-          <h3>Quick Actions</h3>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Link href="/dashboard/workers" className="btn">Manage Workers</Link>
-            <Link href="/dashboard/reports" className="btn">View Reports</Link>
+          <div className={styles.cardHeader}><h2>Students</h2></div>
+          <div className={styles.cardBody}>
+            <div className={styles.stat}><div className={styles.statLabel}>Total</div><div className={styles.statValue}>{studentsTotal}</div></div>
+            <div style={{ marginTop: 12 }}>
+              <Link className={styles.button} href="/dashboard/students">View Students</Link>
+            </div>
           </div>
         </div>
-      </div>
-
-      <section>
-        <h2>Recent Activity</h2>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Worker</th>
-              <th>Tag</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>08:12</td>
-              <td>Jose Ramos</td>
-              <td>TAG-034</td>
-              <td>Check-in</td>
-            </tr>
-            <tr>
-              <td>08:09</td>
-              <td>Maria Cruz</td>
-              <td>TAG-017</td>
-              <td>Check-in</td>
-            </tr>
-            <tr>
-              <td>07:58</td>
-              <td>Samuel Dela</td>
-              <td>TAG-002</td>
-              <td>Check-in</td>
-            </tr>
-          </tbody>
-        </table>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}><h2>Workers</h2></div>
+          <div className={styles.cardBody}>
+            <div className={styles.stat}><div className={styles.statLabel}>Total</div><div className={styles.statValue}>{workersTotal}</div></div>
+            <div style={{ marginTop: 12 }}>
+              <Link className={styles.button} href="/dashboard/workers">View Workers</Link>
+            </div>
+          </div>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}><h2>Attendance</h2></div>
+          <div className={styles.cardBody}>
+            <AttendanceSummary />
+          </div>
+        </div>
       </section>
+
+      <DoorStatusGrid />
+
+      {/* For brevity, reuse attendance/events elsewhere if needed */}
     </main>
   );
 }

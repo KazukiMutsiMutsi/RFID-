@@ -32,4 +32,18 @@ body {
   --text-on-dark: #fffdf9;
   --muted-on-dark: rgba(255,255,255,0.85);
   --focus-ring: rgba(248,194,46,0.9);
+
+  /* Landing page tokens used by CSS Modules (kept global to avoid module purity issues) */
+  --brand-maroon: #8b3b3b;
+  --brand-maroon-2: #6e2b2b;
+  --bg: #fbfbfb;
+  --surface: #ffffff;
+  --muted: rgba(31,41,34,0.65);
+  --border: #e2e8f0;
+  --hero-blur: 8px;
+}
+
+/* Accessibility: disable animations if user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

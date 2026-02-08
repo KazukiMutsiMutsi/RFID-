@@ -19,17 +19,25 @@ export default function Home() {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // same-origin allows Set-Cookie to be accepted for same-site requests
+        credentials: "same-origin",
         body: JSON.stringify({ email, password }),
       });
 
       if (res.ok) {
         router.push("/dashboard");
       } else {
-        const data = await res.json();
-        setError(data?.error || "Invalid email or password");
+        let message = "Invalid email or password";
+        try {
+          const data = await res.json();
+          message = data?.error || message;
+        } catch (_) {
+          // Non-JSON response (e.g., 404 HTML); keep default message
+        }
+        setError(message);
       }
     } catch (err) {
       setError("Network error");
