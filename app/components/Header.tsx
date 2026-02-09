@@ -6,23 +6,21 @@ export default function Header() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <div className={styles.brand}>
-          <Link href="/">School RFID</Link>
+          <div className={styles.logo}>
+            <div className={styles.logoIcon}>
+              <span className={styles.rfidWave}>📡</span>
+            </div>
+            <div className={styles.logoText}>
+              <span className={styles.schoolText}>SCHOOL</span>
+              <span className={styles.rfidText}>RFID</span>
+            </div>
+          </div>
         </div>
 
         <nav aria-label="Main navigation" className={styles.nav}>
-          <ul>
-            <li>
-              <Link href="/">Home</Link>
-            </li>
-            <li>
-              <Link href="/#about">About</Link>
-            </li>
-            <li>
-              <a href="#login" className={styles.signIn}>
-                Sign in
-              </a>
-            </li>
-          </ul>
+          <Link href="#login" className={styles.signInBtn}>
+            Sign in
+          </Link>
         </nav>
       </div>
     </header>

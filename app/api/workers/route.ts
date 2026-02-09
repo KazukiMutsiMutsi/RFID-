@@ -18,7 +18,8 @@ function getMockWorkers() {
     const id = `w-${1000 + i}`;
     const tagId = `TAG-${2000 + i}`;
     const lastSeen = new Date(Date.now() - (i % 12) * 3600_000).toISOString();
-    return { id, name, email: `${name.replace(/\s+/g, ".").toLowerCase()}@school.edu`, role, department, status, tagId, lastSeen };
+    const photoUrl = `https://i.pravatar.cc/150?img=${(i % 70) + 1}`;
+    return { id, name, email: `${name.replace(/\s+/g, ".").toLowerCase()}@school.edu`, role, department, status, tagId, lastSeen, photoUrl };
   });
   return arr;
 }

@@ -560,12 +560,18 @@
 .loginCopy {
   font-family: "Archivo", sans-serif;
   max-width: 520px;
+  color: #000000;
 }
 
 .loginCopy h2 {
   font-family: "Fraunces", serif;
   font-size: 2.2rem;
   margin-bottom: 12px;
+  color: #000000;
+}
+
+.loginCopy p {
+  color: #000000;
 }
 
 .loginHighlights {
@@ -573,8 +579,12 @@
   gap: 14px;
   flex-wrap: wrap;
   margin-top: 18px;
-  color: #1d2b3c;
+  color: #000000;
   font-weight: 600;
+}
+
+.loginHighlights span {
+  color: #000000;
 }
 
 .loginPanel {
@@ -591,11 +601,12 @@
 .loginPanelTitle {
   margin: 0;
   font-weight: 700;
+  color: #000000;
 }
 
 .loginPanelCopy {
   margin: 0;
-  color: #5a5a5a;
+  color: #000000;
 }
 
 .modalOverlay {
@@ -745,15 +756,145 @@
   Responsive
 *****************/
 @media (max-width: 900px) {
-  .heroGrid { grid-template-columns: 1fr; }
+  .heroGrid { 
+    grid-template-columns: 1fr; 
+    gap: 32px;
+    padding: 32px 0 60px;
+  }
   .statsRow { grid-template-columns: 1fr; }
   .featuresGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .steps { grid-template-columns: 1fr; }
   .loginGrid { grid-template-columns: 1fr; }
+  .previewGrid { grid-template-columns: 1fr; }
+  .previewRow { 
+    grid-template-columns: 1fr; 
+    gap: 8px;
+  }
 }
 
 @media (max-width: 600px) {
-  .heroTitle { font-size: 2.4rem; }
-  .sectionHeader h2 { font-size: 1.9rem; }
-  .featuresGrid { grid-template-columns: 1fr; }
+  .container {
+    padding: 0 16px;
+  }
+  
+  .hero {
+    min-height: auto;
+  }
+  
+  .nav {
+    padding: 12px 16px;
+    border-radius: 12px;
+  }
+  
+  .navBrand {
+    font-size: 14px;
+  }
+  
+  .brandMark {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .navGhost {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .heroTitle { 
+    font-size: 2rem; 
+    line-height: 1.1;
+  }
+  
+  .heroSubtitle {
+    font-size: 1rem;
+  }
+  
+  .heroBadge {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+  
+  .sectionHeader h2 { 
+    font-size: 1.75rem; 
+  }
+  
+  .section, .sectionAlt, .loginSection {
+    padding: 60px 0;
+  }
+  
+  .featuresGrid { 
+    grid-template-columns: 1fr; 
+  }
+  
+  .heroPanel {
+    padding: 20px;
+  }
+  
+  .signalPulse {
+    top: -40px;
+    right: -20px;
+    width: 120px;
+    height: 120px;
+  }
+  
+  .bcLogo {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .statCard {
+    padding: 12px;
+  }
+  
+  .statValue {
+    font-size: 1.2rem;
+  }
+  
+  .statLabel {
+    font-size: 0.75rem;
+  }
+  
+  .dashboardPreview {
+    padding: 20px;
+  }
+  
+  .previewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .loginCopy h2 {
+    font-size: 1.75rem;
+  }
+  
+  .loginHighlights {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modalCard {
+    padding: 18px;
+  }
+  
+  .modalHeader h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .heroTitle {
+    font-size: 1.75rem;
+  }
+  
+  .ctaPrimary, .ctaSecondary {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .heroCtas {
+    flex-direction: column;
+    width: 100%;
+  }
 }

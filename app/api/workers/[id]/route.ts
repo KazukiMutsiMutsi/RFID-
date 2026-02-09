@@ -20,13 +20,13 @@ function getMockWorker(id: string) {
   return worker;
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return NextResponse.json({ worker: getMockWorker(id) }, { headers: { "Cache-Control": "no-store" } });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const updates = await req.json();
     const current = getMockWorker(id);

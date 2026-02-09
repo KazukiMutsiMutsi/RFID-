@@ -19,7 +19,8 @@ function getMockStudents() {
     const status = statuses[i % statuses.length];
     const tagId = `TAG-S-${3000 + i}`;
     const lastSeen = new Date(Date.now() - (i % 18) * 1800_000).toISOString();
-    return { id, name, email, grade, section, status, tagId, lastSeen };
+    const photoUrl = `https://i.pravatar.cc/150?img=${(i % 70) + 1}`;
+    return { id, name, email, grade, section, status, tagId, lastSeen, photoUrl };
   });
   return arr;
 }

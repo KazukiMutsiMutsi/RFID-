@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles from "../../styles.module.css";
 
@@ -91,53 +91,59 @@ export default function TagsTable() {
         {error && <div role="alert">Error: {error}</div>}
 
         {!loading && !error && (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>UID</th>
-                <th>Status</th>
-                <th>Type</th>
-                <th>Owner</th>
-                <th>Issued</th>
-                <th>Last Seen</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((t) => (
-                <tr key={t.id} className={styles.tableRow}>
-                  <td>{t.uid}</td>
-                  <td>{t.status}</td>
-                  <td>{t.type}</td>
-                  <td>{t.ownerId ?? "—"}</td>
-                  <td>{t.issuedAt ? new Date(t.issuedAt).toLocaleDateString() : "—"}</td>
-                  <td>{t.lastSeen ? new Date(t.lastSeen).toLocaleString() : "—"}</td>
-                  <td>
-                    <div className={styles.controls}>
-                      <Link className={styles.button} href={`/dashboard/tags/${t.id}`}>View</Link>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+          <>
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>UID</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Owner</th>
+                    <th>Issued</th>
+                    <th>Last Seen</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((t) => (
+                    <tr key={t.id} className={styles.tableRow}>
+                      <td style={{ fontWeight: 600 }}>{t.uid}</td>
+                      <td>{t.status}</td>
+                      <td>{t.type}</td>
+                      <td>{t.ownerId ?? "—"}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>{t.issuedAt ? new Date(t.issuedAt).toLocaleDateString() : "—"}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>{t.lastSeen ? new Date(t.lastSeen).toLocaleString() : "—"}</td>
+                      <td>
+                        <div className={styles.controls}>
+                          <Link className={styles.button} href={`/dashboard/tags/${t.id}`}>View</Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}>
-          <div className={styles.controls}>
-            <button className={styles.button} onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>Prev</button>
-            <span style={{ fontSize: 12, color: "#6b7280" }}>Page {page} / {totalPages}</span>
-            <button className={styles.button} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Next</button>
-          </div>
-          <div className={styles.controls}>
-            <label style={{ fontSize: 12, color: "#6b7280" }}>Rows:</label>
-            <select className={styles.select} value={pageSize} onChange={(e) => { setPage(1); setPageSize(Number(e.target.value)); }}>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={30}>30</option>
-            </select>
-          </div>
-        </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 12 }}>
+                <div className={styles.controls}>
+                  <button className={styles.button} onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>Prev</button>
+                  <span style={{ fontSize: 12, color: "#6b7280", whiteSpace: "nowrap" }}>Page {page} / {totalPages}</span>
+                  <button className={styles.button} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Next</button>
+                </div>
+                <div className={styles.controls}>
+                  <label style={{ fontSize: 12, color: "#6b7280" }}>Rows:</label>
+                  <select className={styles.select} value={pageSize} onChange={(e) => { setPage(1); setPageSize(Number(e.target.value)); }}>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={30}>30</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

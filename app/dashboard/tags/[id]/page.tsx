@@ -15,8 +15,9 @@ async function getEvents(id: string) {
   return res.json();
 }
 
-export default async function TagProfilePage({ params }: { params: { id: string } }) {
-  const [{ tag }, { events }] = await Promise.all([getTag(params.id), getEvents(params.id)]);
+export default async function TagProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const [{ tag }, { events }] = await Promise.all([getTag(id), getEvents(id)]);
 
   return (
     <main className={styles.dashboard}>

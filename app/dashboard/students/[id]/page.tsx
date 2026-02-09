@@ -15,8 +15,9 @@ async function getEvents(id: string) {
   return res.json();
 }
 
-export default async function StudentProfilePage({ params }: { params: { id: string } }) {
-  const [{ student }, { events }] = await Promise.all([getStudent(params.id), getEvents(params.id)]);
+export default async function StudentProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const [{ student }, { events }] = await Promise.all([getStudent(id), getEvents(id)]);
 
   return (
     <main className={styles.dashboard}>
@@ -27,9 +28,23 @@ export default async function StudentProfilePage({ params }: { params: { id: str
         <div className={styles.cardBody}>
           <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 16 }}>
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#e5e7eb", display: "grid", placeItems: "center", fontSize: 20 }}>
-                {student.name.split(" ").map((p: string) => p[0]).join("")}
-              </div>
+              {student.photoUrl ? (
+                <img 
+                  src={student.photoUrl} 
+                  alt={student.name}
+                  style={{ 
+                    width: 80, 
+                    height: 80, 
+                    borderRadius: "50%", 
+                    objectFit: "cover",
+                    border: "3px solid #e5e7eb"
+                  }}
+                />
+              ) : (
+                <div style={{ width: 80, height: 80, borderRadius: "50%", background: "#e5e7eb", display: "grid", placeItems: "center", fontSize: 24, fontWeight: 700 }}>
+                  {student.name.split(" ").map((p: string) => p[0]).join("")}
+                </div>
+              )}
               <div>
                 <div style={{ fontWeight: 700 }}>{student.name}</div>
                 <div style={{ fontSize: 12, color: "#6b7280" }}>{student.email}</div>

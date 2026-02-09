@@ -7,9 +7,9 @@ import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-function getBaseUrl() {
+async function getBaseUrl() {
   try {
-    const h = Object.fromEntries(headers());
+    const h = Object.fromEntries(await headers());
     const protocol = (h["x-forwarded-proto"] as string) || "http";
     const host = (h["x-forwarded-host"] as string) || (h["host"] as string) || "localhost:3000";
     return `${protocol}://${host}`;
@@ -19,7 +19,7 @@ function getBaseUrl() {
 }
 
 async function getCounts(path: string) {
-  const base = process.env.NEXT_PUBLIC_BASE_URL || getBaseUrl();
+  const base = process.env.NEXT_PUBLIC_BASE_URL || await getBaseUrl();
   const res = await fetch(`${base}${path}`, { cache: "no-store" });
   const json = await res.json();
   return { total: json.total ?? (json.data?.length ?? 0) };
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
 
   return (
     <main className={styles.dashboard}>
-      <h1 style={{ fontSize: 28, fontWeight: 800 }}>Overview</h1>
+      <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Overview</h1>
 
       <section className={styles.grid + " cols-3"}>
         <div className={styles.card}>

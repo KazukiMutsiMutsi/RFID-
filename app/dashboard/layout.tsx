@@ -13,6 +13,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const nav = [
     { href: "/dashboard", label: "Overview" },
+    { href: "/dashboard/attendance", label: "Attendance" },
+    { href: "/dashboard/students", label: "Students" },
     { href: "/dashboard/workers", label: "Workers" },
     { href: "/dashboard/tags", label: "Tags" },
     { href: "/dashboard/reports", label: "Reports" },
@@ -21,6 +23,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className={styles.wrapper} data-sidebar-open={open ? "true" : "false"}>
+      {/* Mobile overlay */}
+      <div className={styles.overlay} onClick={() => setOpen(false)} />
+      
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
           <img src="/bc-logo.png" alt="Logo" className={styles.brandLogo} />
@@ -80,6 +85,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
 
             <div className={styles.avatar} title="Admin">N</div>
+
+            <button
+              className={styles.logoutBtn}
+              onClick={() => router.push("/")}
+              title="Log out"
+            >
+              Log out
+            </button>
           </div>
         </header>
 
