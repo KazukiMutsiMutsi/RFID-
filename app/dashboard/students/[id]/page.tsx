@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "../../styles.module.css";
+import EditableProfile from "./components/EditableProfile";
 
 export const dynamic = "force-dynamic";
 
@@ -23,42 +24,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
     <main className={styles.dashboard}>
       <h1 style={{ fontSize: 24, fontWeight: 800 }}>{student.name}</h1>
 
-      <section className={styles.card}>
-        <div className={styles.cardHeader}><h2>Overview</h2></div>
-        <div className={styles.cardBody}>
-          <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 16 }}>
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              {student.photoUrl ? (
-                <img 
-                  src={student.photoUrl} 
-                  alt={student.name}
-                  style={{ 
-                    width: 80, 
-                    height: 80, 
-                    borderRadius: "50%", 
-                    objectFit: "cover",
-                    border: "3px solid #e5e7eb"
-                  }}
-                />
-              ) : (
-                <div style={{ width: 80, height: 80, borderRadius: "50%", background: "#e5e7eb", display: "grid", placeItems: "center", fontSize: 24, fontWeight: 700 }}>
-                  {student.name.split(" ").map((p: string) => p[0]).join("")}
-                </div>
-              )}
-              <div>
-                <div style={{ fontWeight: 700 }}>{student.name}</div>
-                <div style={{ fontSize: 12, color: "#6b7280" }}>{student.email}</div>
-                <div className={styles.badge + " " + (student.status === "active" ? styles.statusOnline : styles.statusOffline)} style={{ marginTop: 6 }}>{student.status}</div>
-              </div>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-              <div className={styles.stat}><div className={styles.statLabel}>Grade</div><div className={styles.statValue}>{student.grade}</div></div>
-              <div className={styles.stat}><div className={styles.statLabel}>Section</div><div className={styles.statValue}>{student.section}</div></div>
-              <div className={styles.stat}><div className={styles.statLabel}>Tag</div><div className={styles.statValue}>{student.tagId ?? "—"}</div></div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <EditableProfile student={student} />
 
       <section className={styles.card}>
         <div className={styles.cardHeader}><h2>Recent Activity</h2></div>

@@ -57,16 +57,19 @@ enum StudentStatus {
 }
 
 model Student {
-  id        String        @id @default(cuid())
-  name      String
-  email     String        @unique
-  grade     Int
-  section   String
-  status    StudentStatus @default(active)
-  tagId     String?
-  lastSeen  DateTime?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  name              String
+  email             String        @unique
+  grade             Int
+  section           String
+  status            StudentStatus @default(active)
+  tagId             String?
+  location          String?
+  emergencyContact  String?
+  emergencyPhone    String?
+  lastSeen          DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   events    Event[]
 
@@ -82,16 +85,19 @@ enum WorkerStatus {
 }
 
 model Worker {
-  id         String       @id @default(cuid())
-  name       String
-  email      String       @unique
-  role       String
-  department String
-  status     WorkerStatus @default(active)
-  tagId      String?
-  lastSeen   DateTime?
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  name              String
+  email             String       @unique
+  role              String
+  department        String
+  status            WorkerStatus @default(active)
+  tagId             String?
+  location          String?
+  emergencyContact  String?
+  emergencyPhone    String?
+  lastSeen          DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   events     Event[]
 

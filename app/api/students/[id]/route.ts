@@ -15,6 +15,9 @@ function getMockStudent(id: string) {
     section: sections[idx % sections.length],
     status: statuses[idx % statuses.length],
     tagId: `TAG-S-${3000 + (idx % 200)}`,
+    location: null,
+    emergencyContact: null,
+    emergencyPhone: null,
     lastSeen: new Date(Date.now() - (idx % 18) * 1800_000).toISOString(),
   };
   return student;

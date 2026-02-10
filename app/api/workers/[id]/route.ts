@@ -15,6 +15,9 @@ function getMockWorker(id: string) {
     department: departments[idx % departments.length],
     status: statuses[idx % statuses.length],
     tagId: `TAG-${2000 + (idx % 100)}`,
+    location: null,
+    emergencyContact: null,
+    emergencyPhone: null,
     lastSeen: new Date(Date.now() - (idx % 12) * 3600_000).toISOString(),
   };
   return worker;
