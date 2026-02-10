@@ -12,13 +12,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   const nav = [
-    { href: "/dashboard", label: "Overview" },
-    { href: "/dashboard/attendance", label: "Attendance" },
-    { href: "/dashboard/students", label: "Students" },
-    { href: "/dashboard/workers", label: "Workers" },
-    { href: "/dashboard/tags", label: "Tags" },
-    { href: "/dashboard/reports", label: "Reports" },
-    { href: "/dashboard/settings", label: "Settings" },
+    { href: "/dashboard", label: "Overview", icon: "🏠" },
+    { href: "/dashboard/attendance", label: "Attendance", icon: "📋" },
+    { href: "/dashboard/students", label: "Students", icon: "👨‍🎓" },
+    { href: "/dashboard/workers", label: "Workers", icon: "👷" },
+    { href: "/dashboard/tags", label: "Tags", icon: "🏷️" },
+    { href: "/dashboard/reports", label: "Reports", icon: "📊" },
+    { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
   ];
 
   return (

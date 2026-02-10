@@ -7,12 +7,20 @@ function getMockStudent(id: string) {
   const grades = [7, 8, 9, 10, 11, 12] as const;
   const sections = ["A", "B", "C", "D"] as const;
   const statuses = ["active", "disabled"] as const;
+  const studentTypes = ["highschool", "college"] as const;
+  const colleges = ["College of Engineering", "College of Arts and Sciences", "College of Business", "College of Education"] as const;
+  const courses = ["Computer Science", "Information Technology", "Business Administration", "Education", "Engineering"] as const;
+  
+  const studentType = studentTypes[idx % studentTypes.length];
   const student = {
     id,
     name: `Student ${idx}`,
     email: `student${idx}@students.school.edu`,
-    grade: grades[idx % grades.length],
-    section: sections[idx % sections.length],
+    studentType,
+    grade: studentType === "highschool" ? grades[idx % grades.length] : null,
+    section: studentType === "highschool" ? sections[idx % sections.length] : null,
+    college: studentType === "college" ? colleges[idx % colleges.length] : null,
+    course: studentType === "college" ? courses[idx % courses.length] : null,
     status: statuses[idx % statuses.length],
     tagId: `TAG-S-${3000 + (idx % 200)}`,
     location: null,

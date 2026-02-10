@@ -8,19 +8,25 @@ function getMockStudents() {
   const last = ["Lopez", "Reyes", "Santos", "Garcia", "Cruz", "Diaz", "Tan", "Lim", "Flores", "Lee"];
   const grades = [7, 8, 9, 10, 11, 12] as const;
   const sections = ["A", "B", "C", "D"] as const;
-  const statuses = ["active", "disabled"] as const; // keep same naming as workers for badge reuse
+  const statuses = ["active", "disabled"] as const;
+  const studentTypes = ["highschool", "college"] as const;
+  const colleges = ["College of Engineering", "College of Arts and Sciences", "College of Business", "College of Education"] as const;
+  const courses = ["Computer Science", "Information Technology", "Business Administration", "Education", "Engineering"] as const;
 
   const arr = Array.from({ length: 120 }).map((_, i) => {
     const name = `${first[i % first.length]} ${last[i % last.length]}`;
     const id = `s-${10000 + i}`;
     const email = `${name.replace(/\s+/g, ".").toLowerCase()}@students.school.edu`;
-    const grade = grades[i % grades.length];
-    const section = sections[i % sections.length];
+    const studentType = studentTypes[i % studentTypes.length];
+    const grade = studentType === "highschool" ? grades[i % grades.length] : null;
+    const section = studentType === "highschool" ? sections[i % sections.length] : null;
+    const college = studentType === "college" ? colleges[i % colleges.length] : null;
+    const course = studentType === "college" ? courses[i % courses.length] : null;
     const status = statuses[i % statuses.length];
     const tagId = `TAG-S-${3000 + i}`;
     const lastSeen = new Date(Date.now() - (i % 18) * 1800_000).toISOString();
     const photoUrl = `https://i.pravatar.cc/150?img=${(i % 70) + 1}`;
-    return { id, name, email, grade, section, status, tagId, lastSeen, photoUrl };
+    return { id, name, email, studentType, grade, section, college, course, status, tagId, lastSeen, photoUrl };
   });
   return arr;
 }
@@ -59,19 +65,21 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const name = String(body?.name || "").trim();
     const email = String(body?.email || "").trim();
-    const grade = Number(body?.grade);
-    const section = String(body?.section || "").trim();
+    const studentType = String(body?.studentType || "highschool");
 
-    if (!name || !email || !grade) {
-      return NextResponse.json({ error: "name, email, and grade are required" }, { status: 400 });
+    if (!name || !email) {
+      return NextResponse.json({ error: "name and email are required" }, { status: 400 });
     }
 
     const created = {
       id: `s-${Math.floor(Math.random() * 100000)}`,
       name,
       email,
-      grade,
-      section,
+      studentType,
+      grade: studentType === "highschool" ? Number(body?.grade) : null,
+      section: studentType === "highschool" ? String(body?.section || "").trim() : null,
+      college: studentType === "college" ? (body?.college || null) : null,
+      course: studentType === "college" ? (body?.course || null) : null,
       status: "active" as const,
       tagId: body?.tagId || null,
       lastSeen: null as string | null,

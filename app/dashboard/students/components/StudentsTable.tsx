@@ -8,8 +8,11 @@ type Student = {
   id: string;
   name: string;
   email: string;
-  grade: number;
-  section: string;
+  studentType: "highschool" | "college";
+  grade?: number | null;
+  section?: string | null;
+  college?: string | null;
+  course?: string | null;
   status: "active" | "disabled";
   tagId: string | null;
   lastSeen: string | null;
@@ -38,8 +41,12 @@ export default function StudentsTable() {
 
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [editForm, setEditForm] = useState<Student | null>(null);
   const [signature, setSignature] = useState("");
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / pageSize)), [total, pageSize]);
 
@@ -73,7 +80,70 @@ export default function StudentsTable() {
     setSelectedStudent(student);
     setEditForm(student);
     setIsEditing(false);
+    setIsAdding(false);
     setSignature("");
+    setPhotoPreview(student.photoUrl || null);
+  };
+
+  const handleAddNew = () => {
+    // Generate tag ID with year and sequential number: YYYY-XXXX
+    const currentYear = new Date().getFullYear();
+    const enrollmentNumber = Math.floor(1 + Math.random() * 9999).toString().padStart(4, '0');
+    const randomTagId = `${currentYear}-${enrollmentNumber}`;
+    
+    const newStudent: Student = {
+      id: `temp-${Date.now()}`,
+      name: "",
+      email: "",
+      studentType: "highschool",
+      grade: 7,
+      section: "A",
+      college: "",
+      course: "",
+      status: "active",
+      tagId: randomTagId,
+      lastSeen: null,
+    };
+    setEditForm(newStudent);
+    setSelectedStudent(newStudent);
+    setIsAdding(true);
+    setIsEditing(true);
+    setSignature("");
+    setPhotoPreview(null);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Photo size must be less than 5MB");
+        return;
+      }
+      
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert("Please select an image file");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setPhotoPreview(result);
+        if (editForm) {
+          setEditForm({ ...editForm, photoUrl: result });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoPreview(null);
+    if (editForm) {
+      setEditForm({ ...editForm, photoUrl: undefined });
+    }
   };
 
   const handleEdit = () => {
@@ -82,19 +152,62 @@ export default function StudentsTable() {
 
   const handleSave = () => {
     if (editForm) {
-      // Update the student in the list
-      setRows(rows.map(s => s.id === editForm.id ? editForm : s));
-      setSelectedStudent(editForm);
+      setShowSaveConfirm(true);
+    }
+  };
+
+  const confirmSave = () => {
+    if (editForm) {
+      if (isAdding) {
+        // Add new student to the list
+        const newStudent = { ...editForm, id: `student-${Date.now()}` };
+        setRows([newStudent, ...rows]);
+        setTotal(total + 1);
+      } else {
+        // Update existing student
+        setRows(rows.map(s => s.id === editForm.id ? editForm : s));
+        setSelectedStudent(editForm);
+      }
+      setShowSaveConfirm(false);
       setIsEditing(false);
-      alert("Student information updated successfully!");
+      setIsAdding(false);
+      handleClose();
+      
+      // Show success message
+      setTimeout(() => {
+        alert(isAdding ? "✅ Student added successfully!" : "✅ Student updated successfully!");
+      }, 100);
+    }
+  };
+
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedStudent) {
+      // Remove student from the list
+      setRows(rows.filter(s => s.id !== selectedStudent.id));
+      setTotal(total - 1);
+      setShowDeleteConfirm(false);
+      handleClose();
+      
+      // Show success message
+      setTimeout(() => {
+        alert("🗑️ Student deleted successfully!");
+      }, 100);
     }
   };
 
   const handleClose = () => {
     setSelectedStudent(null);
     setIsEditing(false);
+    setIsAdding(false);
     setEditForm(null);
     setSignature("");
+    setPhotoPreview(null);
+    setShowDeleteConfirm(false);
+    setShowSaveConfirm(false);
   };
 
   return (
@@ -113,6 +226,13 @@ export default function StudentsTable() {
               <option value="active">Active</option>
               <option value="disabled">Disabled</option>
             </select>
+            <button 
+              className={styles.button} 
+              onClick={handleAddNew}
+              style={{ background: "#8b3b3b", color: "white", fontWeight: 600 }}
+            >
+              + Add Student
+            </button>
           </div>
         </div>
         <div className={styles.cardBody}>
@@ -126,8 +246,9 @@ export default function StudentsTable() {
                   <thead>
                     <tr>
                       <th>Name</th>
-                      <th>Grade</th>
-                      <th>Section</th>
+                      <th>Type</th>
+                      <th>Grade/Year</th>
+                      <th>Section/Course</th>
                       <th>Status</th>
                       <th>Tag</th>
                       <th>Last Seen</th>
@@ -163,8 +284,13 @@ export default function StudentsTable() {
                             </div>
                           </div>
                         </td>
-                        <td>{s.grade}</td>
-                        <td>{s.section}</td>
+                        <td>
+                          <span className={styles.badge} style={{ background: s.studentType === "highschool" ? "#dbeafe" : "#fef3c7", color: s.studentType === "highschool" ? "#1e40af" : "#92400e" }}>
+                            {s.studentType === "highschool" ? "High School" : "College"}
+                          </span>
+                        </td>
+                        <td>{s.studentType === "highschool" ? (s.grade || "—") : "—"}</td>
+                        <td>{s.studentType === "highschool" ? (s.section || "—") : (s.course || "—")}</td>
                         <td>
                           <span className={styles.badge + " " + (s.status === "active" ? styles.statusOnline : styles.statusOffline)}>
                             {s.status}
@@ -215,16 +341,18 @@ export default function StudentsTable() {
           alignItems: "center",
           justifyContent: "center",
           zIndex: 1000,
-          padding: 20
+          padding: 20,
+          overflowY: "auto"
         }} onClick={handleClose}>
           <div style={{
             background: "white",
             borderRadius: 16,
-            maxWidth: 600,
+            maxWidth: 700,
             width: "100%",
-            maxHeight: "90vh",
+            maxHeight: "95vh",
             overflow: "auto",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.3)"
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            margin: "auto"
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{
               padding: 24,
@@ -233,7 +361,9 @@ export default function StudentsTable() {
               justifyContent: "space-between",
               alignItems: "center"
             }}>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>Student Profile</h2>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>
+                {isAdding ? "Add New Student" : "Student Profile"}
+              </h2>
               <button onClick={handleClose} style={{
                 background: "none",
                 border: "none",
@@ -245,38 +375,130 @@ export default function StudentsTable() {
 
             <div style={{ padding: 24 }}>
               {/* Profile Picture */}
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-                {selectedStudent.photoUrl ? (
-                  <img 
-                    src={selectedStudent.photoUrl} 
-                    alt={selectedStudent.name}
-                    style={{ 
+              {!isAdding && (
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+                  {selectedStudent.photoUrl ? (
+                    <img 
+                      src={selectedStudent.photoUrl} 
+                      alt={selectedStudent.name}
+                      style={{ 
+                        width: 120, 
+                        height: 120, 
+                        borderRadius: "50%", 
+                        objectFit: "cover",
+                        border: "4px solid #e5e7eb"
+                      }}
+                    />
+                  ) : (
+                    <div style={{ 
                       width: 120, 
                       height: 120, 
                       borderRadius: "50%", 
-                      objectFit: "cover",
-                      border: "4px solid #e5e7eb"
-                    }}
-                  />
-                ) : (
-                  <div style={{ 
-                    width: 120, 
-                    height: 120, 
-                    borderRadius: "50%", 
-                    background: "#e5e7eb", 
-                    display: "grid", 
-                    placeItems: "center", 
-                    fontSize: 36, 
-                    fontWeight: 700 
-                  }}>
-                    {selectedStudent.name.split(" ").map((p) => p[0]).join("")}
-                  </div>
-                )}
-              </div>
+                      background: "#e5e7eb", 
+                      display: "grid", 
+                      placeItems: "center", 
+                      fontSize: 36, 
+                      fontWeight: 700 
+                    }}>
+                      {selectedStudent.name.split(" ").map((p) => p[0]).join("")}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Information Form */}
               {isEditing && editForm ? (
-                <div style={{ display: "grid", gap: 16 }}>
+                <div style={{ display: "grid", gap: 12 }}>
+                  {/* Photo Upload Section */}
+                  <div>
+                    <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Profile Photo</label>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                      {photoPreview ? (
+                        <div style={{ position: "relative" }}>
+                          <img 
+                            src={photoPreview} 
+                            alt="Preview"
+                            style={{ 
+                              width: 100, 
+                              height: 100, 
+                              borderRadius: "50%", 
+                              objectFit: "cover",
+                              border: "3px solid #e5e7eb"
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleRemovePhoto}
+                            style={{
+                              position: "absolute",
+                              top: -5,
+                              right: -5,
+                              width: 28,
+                              height: 28,
+                              borderRadius: "50%",
+                              background: "#ef4444",
+                              color: "white",
+                              border: "2px solid white",
+                              cursor: "pointer",
+                              fontSize: 14,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontWeight: 700
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          width: 100, 
+                          height: 100, 
+                          borderRadius: "50%", 
+                          background: "#f3f4f6", 
+                          display: "grid", 
+                          placeItems: "center", 
+                          fontSize: 40,
+                          border: "2px dashed #d1d5db"
+                        }}>
+                          📷
+                        </div>
+                      )}
+                      <label style={{ cursor: "pointer" }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoChange}
+                          style={{ display: "none" }}
+                        />
+                        <span className={styles.button} style={{ display: "inline-block", background: "#6b7280", color: "white", padding: "6px 12px", fontSize: 13 }}>
+                          {photoPreview ? "Change" : "Upload"}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div style={{ borderTop: "1px solid #e5e7eb", margin: "8px 0" }} />
+                  
+                  <div>
+                    <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Student Type</label>
+                    <select 
+                      className={styles.select}
+                      value={editForm.studentType}
+                      onChange={(e) => setEditForm({ 
+                        ...editForm, 
+                        studentType: e.target.value as "highschool" | "college",
+                        // Reset fields when switching type
+                        grade: e.target.value === "highschool" ? 7 : null,
+                        section: e.target.value === "highschool" ? "A" : null,
+                        college: e.target.value === "college" ? "" : null,
+                        course: e.target.value === "college" ? "" : null,
+                      })}
+                    >
+                      <option value="highschool">High School</option>
+                      <option value="college">College</option>
+                    </select>
+                  </div>
                   <div>
                     <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Full Name</label>
                     <input 
@@ -294,33 +516,148 @@ export default function StudentsTable() {
                       onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                     />
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    <div>
-                      <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Grade</label>
-                      <select 
-                        className={styles.select}
-                        value={editForm.grade}
-                        onChange={(e) => setEditForm({ ...editForm, grade: Number(e.target.value) })}
-                      >
-                        {[7, 8, 9, 10, 11, 12].map((g) => <option key={g} value={g}>{g}</option>)}
-                      </select>
+                  
+                  {editForm.studentType === "highschool" ? (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div>
+                        <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Grade</label>
+                        <select 
+                          className={styles.select}
+                          value={editForm.grade || 7}
+                          onChange={(e) => setEditForm({ ...editForm, grade: Number(e.target.value) })}
+                        >
+                          {[7, 8, 9, 10, 11, 12].map((g) => <option key={g} value={g}>{g}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Section</label>
+                        <input 
+                          className={styles.input}
+                          value={editForm.section || ""}
+                          onChange={(e) => setEditForm({ ...editForm, section: e.target.value })}
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Section</label>
-                      <input 
-                        className={styles.input}
-                        value={editForm.section}
-                        onChange={(e) => setEditForm({ ...editForm, section: e.target.value })}
-                      />
+                  ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div>
+                        <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>College</label>
+                        <select 
+                          className={styles.select}
+                          value={editForm.college || ""}
+                          onChange={(e) => setEditForm({ ...editForm, college: e.target.value })}
+                        >
+                          <option value="">Select College</option>
+                          <option value="College of Engineering">College of Engineering</option>
+                          <option value="College of Computer Studies">College of Computer Studies</option>
+                          <option value="College of Arts and Sciences">College of Arts and Sciences</option>
+                          <option value="College of Business Administration">College of Business Administration</option>
+                          <option value="College of Education">College of Education</option>
+                          <option value="College of Nursing">College of Nursing</option>
+                          <option value="College of Architecture">College of Architecture</option>
+                          <option value="College of Law">College of Law</option>
+                          <option value="College of Medicine">College of Medicine</option>
+                          <option value="College of Agriculture">College of Agriculture</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Course</label>
+                        <select 
+                          className={styles.select}
+                          value={editForm.course || ""}
+                          onChange={(e) => setEditForm({ ...editForm, course: e.target.value })}
+                        >
+                          <option value="">Select Course</option>
+                          <optgroup label="Computer Studies">
+                            <option value="BS Information Technology (BSIT)">BS Information Technology (BSIT)</option>
+                            <option value="BS Computer Science (BSCS)">BS Computer Science (BSCS)</option>
+                            <option value="BS Information Systems (BSIS)">BS Information Systems (BSIS)</option>
+                            <option value="BS Computer Engineering (BSCpE)">BS Computer Engineering (BSCpE)</option>
+                          </optgroup>
+                          <optgroup label="Engineering">
+                            <option value="BS Civil Engineering (BSCE)">BS Civil Engineering (BSCE)</option>
+                            <option value="BS Electrical Engineering (BSEE)">BS Electrical Engineering (BSEE)</option>
+                            <option value="BS Mechanical Engineering (BSME)">BS Mechanical Engineering (BSME)</option>
+                            <option value="BS Electronics Engineering (BSECE)">BS Electronics Engineering (BSECE)</option>
+                            <option value="BS Industrial Engineering (BSIE)">BS Industrial Engineering (BSIE)</option>
+                          </optgroup>
+                          <optgroup label="Business">
+                            <option value="BS Business Administration (BSBA)">BS Business Administration (BSBA)</option>
+                            <option value="BS Accountancy (BSA)">BS Accountancy (BSA)</option>
+                            <option value="BS Management Accounting (BSMA)">BS Management Accounting (BSMA)</option>
+                            <option value="BS Entrepreneurship">BS Entrepreneurship</option>
+                            <option value="BS Marketing Management">BS Marketing Management</option>
+                          </optgroup>
+                          <optgroup label="Education">
+                            <option value="Bachelor of Elementary Education (BEEd)">Bachelor of Elementary Education (BEEd)</option>
+                            <option value="Bachelor of Secondary Education (BSEd)">Bachelor of Secondary Education (BSEd)</option>
+                            <option value="Bachelor of Physical Education (BPEd)">Bachelor of Physical Education (BPEd)</option>
+                            <option value="Bachelor of Special Needs Education (BSNEd)">Bachelor of Special Needs Education (BSNEd)</option>
+                          </optgroup>
+                          <optgroup label="Health Sciences">
+                            <option value="BS Nursing (BSN)">BS Nursing (BSN)</option>
+                            <option value="BS Pharmacy">BS Pharmacy</option>
+                            <option value="BS Medical Technology">BS Medical Technology</option>
+                            <option value="BS Physical Therapy">BS Physical Therapy</option>
+                            <option value="Doctor of Medicine (MD)">Doctor of Medicine (MD)</option>
+                          </optgroup>
+                          <optgroup label="Arts & Sciences">
+                            <option value="BS Psychology (BSPsych)">BS Psychology (BSPsych)</option>
+                            <option value="AB Communication">AB Communication</option>
+                            <option value="AB English">AB English</option>
+                            <option value="BS Biology">BS Biology</option>
+                            <option value="BS Mathematics">BS Mathematics</option>
+                          </optgroup>
+                          <optgroup label="Architecture & Design">
+                            <option value="BS Architecture (BSArch)">BS Architecture (BSArch)</option>
+                            <option value="BS Interior Design">BS Interior Design</option>
+                            <option value="BS Landscape Architecture">BS Landscape Architecture</option>
+                          </optgroup>
+                          <optgroup label="Agriculture">
+                            <option value="BS Agriculture">BS Agriculture</option>
+                            <option value="BS Agricultural Engineering">BS Agricultural Engineering</option>
+                            <option value="BS Forestry">BS Forestry</option>
+                          </optgroup>
+                          <optgroup label="Hospitality & Tourism">
+                            <option value="BS Hospitality Management (BSHM)">BS Hospitality Management (BSHM)</option>
+                            <option value="BS Tourism Management (BSTM)">BS Tourism Management (BSTM)</option>
+                            <option value="BS Hotel and Restaurant Management">BS Hotel and Restaurant Management</option>
+                          </optgroup>
+                          <optgroup label="Law & Criminology">
+                            <option value="Bachelor of Laws (LLB)">Bachelor of Laws (LLB)</option>
+                            <option value="BS Criminology">BS Criminology</option>
+                          </optgroup>
+                        </select>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  
                   <div>
                     <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Tag ID</label>
-                    <input 
-                      className={styles.input}
-                      value={editForm.tagId || ""}
-                      onChange={(e) => setEditForm({ ...editForm, tagId: e.target.value })}
-                    />
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input 
+                        className={styles.input}
+                        value={editForm.tagId || ""}
+                        readOnly
+                        style={{ flex: 1, background: "#f9fafb", cursor: "not-allowed" }}
+                      />
+                      <button
+                        type="button"
+                        className={styles.button}
+                        onClick={() => {
+                          const currentYear = new Date().getFullYear();
+                          const enrollmentNumber = Math.floor(1 + Math.random() * 9999).toString().padStart(4, '0');
+                          const newTagId = `${currentYear}-${enrollmentNumber}`;
+                          setEditForm({ ...editForm, tagId: newTagId });
+                        }}
+                        style={{ background: "#6b7280", color: "white", whiteSpace: "nowrap" }}
+                      >
+                        🔄 Regenerate
+                      </button>
+                    </div>
+                    <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
+                      Format: YEAR-NUMBER (e.g., 2024-0001)
+                    </div>
                   </div>
                   <div>
                     <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Status</label>
@@ -369,13 +706,34 @@ export default function StudentsTable() {
                     <span>{selectedStudent.email}</span>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
-                    <span style={{ fontWeight: 600, color: "#6b7280" }}>Grade:</span>
-                    <span>{selectedStudent.grade}</span>
+                    <span style={{ fontWeight: 600, color: "#6b7280" }}>Type:</span>
+                    <span className={styles.badge} style={{ background: selectedStudent.studentType === "highschool" ? "#dbeafe" : "#fef3c7", color: selectedStudent.studentType === "highschool" ? "#1e40af" : "#92400e", width: "fit-content" }}>
+                      {selectedStudent.studentType === "highschool" ? "High School" : "College"}
+                    </span>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
-                    <span style={{ fontWeight: 600, color: "#6b7280" }}>Section:</span>
-                    <span>{selectedStudent.section}</span>
-                  </div>
+                  {selectedStudent.studentType === "highschool" ? (
+                    <>
+                      <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontWeight: 600, color: "#6b7280" }}>Grade:</span>
+                        <span>{selectedStudent.grade || "—"}</span>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontWeight: 600, color: "#6b7280" }}>Section:</span>
+                        <span>{selectedStudent.section || "—"}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontWeight: 600, color: "#6b7280" }}>College:</span>
+                        <span>{selectedStudent.college || "—"}</span>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontWeight: 600, color: "#6b7280" }}>Course:</span>
+                        <span>{selectedStudent.course || "—"}</span>
+                      </div>
+                    </>
+                  )}
                   <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
                     <span style={{ fontWeight: 600, color: "#6b7280" }}>Tag ID:</span>
                     <span>{selectedStudent.tagId || "—"}</span>
@@ -394,34 +752,153 @@ export default function StudentsTable() {
               )}
 
               {/* Action Buttons */}
-              <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "flex-end" }}>
+              <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "space-between", flexWrap: "wrap" }}>
                 {isEditing ? (
+                  <>
+                    <div style={{ display: "flex", gap: 12 }}>
+                      {!isAdding && (
+                        <button 
+                          className={styles.button}
+                          onClick={handleDelete}
+                          style={{ background: "#ef4444", color: "white", border: "none" }}
+                        >
+                          🗑️ Delete
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", gap: 12 }}>
+                      <button 
+                        className={styles.button}
+                        onClick={() => setIsEditing(false)}
+                        style={{ background: "#f3f4f6" }}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        className={styles.button}
+                        onClick={handleSave}
+                        style={{ background: "#8b3b3b", color: "white" }}
+                        disabled={!editForm?.name || !editForm?.email}
+                      >
+                        {isAdding ? "Add Student" : "Save Changes"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
                   <>
                     <button 
                       className={styles.button}
-                      onClick={() => setIsEditing(false)}
-                      style={{ background: "#f3f4f6" }}
+                      onClick={handleDelete}
+                      style={{ background: "#ef4444", color: "white", border: "none" }}
                     >
-                      Cancel
+                      🗑️ Delete
                     </button>
                     <button 
                       className={styles.button}
-                      onClick={handleSave}
+                      onClick={handleEdit}
                       style={{ background: "#8b3b3b", color: "white" }}
                     >
-                      Save Changes
+                      Edit Profile
                     </button>
                   </>
-                ) : (
-                  <button 
-                    className={styles.button}
-                    onClick={handleEdit}
-                    style={{ background: "#8b3b3b", color: "white" }}
-                  >
-                    Edit Profile
-                  </button>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Confirmation Modal */}
+      {showSaveConfirm && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1100,
+          padding: 20
+        }} onClick={() => setShowSaveConfirm(false)}>
+          <div style={{
+            background: "white",
+            borderRadius: 16,
+            maxWidth: 400,
+            width: "100%",
+            padding: 24,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)"
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16 }}>💾</div>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 800, textAlign: "center" }}>
+              {isAdding ? "Add Student?" : "Save Changes?"}
+            </h3>
+            <p style={{ margin: "0 0 24px 0", color: "#6b7280", textAlign: "center", fontSize: 14 }}>
+              {isAdding 
+                ? "Are you sure you want to add this student to the system?" 
+                : "Are you sure you want to save these changes?"}
+            </p>
+            <div style={{ display: "flex", gap: 12 }}>
+              <button 
+                className={styles.button}
+                onClick={() => setShowSaveConfirm(false)}
+                style={{ flex: 1, background: "#f3f4f6" }}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.button}
+                onClick={confirmSave}
+                style={{ flex: 1, background: "#10b981", color: "white", border: "none" }}
+              >
+                {isAdding ? "Yes, Add" : "Yes, Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1100,
+          padding: 20
+        }} onClick={() => setShowDeleteConfirm(false)}>
+          <div style={{
+            background: "white",
+            borderRadius: 16,
+            maxWidth: 400,
+            width: "100%",
+            padding: 24,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)"
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16 }}>⚠️</div>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 800, textAlign: "center", color: "#ef4444" }}>
+              Delete Student?
+            </h3>
+            <p style={{ margin: "0 0 24px 0", color: "#6b7280", textAlign: "center", fontSize: 14 }}>
+              Are you sure you want to delete <strong>{selectedStudent?.name}</strong>? This action cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 12 }}>
+              <button 
+                className={styles.button}
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{ flex: 1, background: "#f3f4f6" }}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.button}
+                onClick={confirmDelete}
+                style={{ flex: 1, background: "#ef4444", color: "white", border: "none" }}
+              >
+                Yes, Delete
+              </button>
             </div>
           </div>
         </div>

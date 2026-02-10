@@ -2,12 +2,50 @@
 
 ## Changes Made
 
-Added the following fields to both `Student` and `Worker` models:
+Added the following fields to the `Student` model:
+- `studentType` (Enum: highschool/college) - Type of student with default "highschool"
+- `grade` (Int, optional) - Grade level for high school students (7-12)
+- `section` (String, optional) - Section for high school students
+- `college` (String, optional) - College/Faculty name for college students
+- `course` (String, optional) - Course/Program name for college students
 - `location` (String, optional) - Physical location/address
 - `emergencyContact` (String, optional) - Emergency contact person name
 - `emergencyPhone` (String, optional) - Emergency contact phone number
 
-## Prerequisites
+Added the following fields to the `Worker` model:
+- `location` (String, optional) - Physical location/address
+- `emergencyContact` (String, optional) - Emergency contact person name
+- `emergencyPhone` (String, optional) - Emergency contact phone number
+
+## Quick Setup with Docker (Recommended)
+
+If you have Docker installed, this is the easiest way:
+
+1. **Start PostgreSQL with Docker**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Run the migration**
+   ```bash
+   npx prisma migrate dev --name add_student_type_and_fields
+   ```
+
+3. **Generate Prisma Client**
+   ```bash
+   npx prisma generate
+   ```
+
+4. **Start your app**
+   ```bash
+   npm run dev
+   ```
+
+See `DOCKER_SETUP.md` for detailed Docker instructions.
+
+## Alternative: Manual PostgreSQL Setup
+
+If you prefer to install PostgreSQL directly:
 
 1. **Install PostgreSQL** (if not already installed)
    - Download from: https://www.postgresql.org/download/

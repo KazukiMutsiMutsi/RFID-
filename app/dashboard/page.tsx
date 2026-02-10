@@ -34,29 +34,56 @@ export default async function DashboardPage() {
 
   return (
     <main className={styles.dashboard}>
-      <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Overview</h1>
+      <div style={{ marginBottom: 8 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0, color: "#1f2937", letterSpacing: "-0.02em" }}>
+          Dashboard Overview
+        </h1>
+        <p style={{ fontSize: 14, color: "#6b7280", margin: "4px 0 0 0" }}>
+          Welcome back! Here's what's happening today.
+        </p>
+      </div>
 
       <section className={styles.grid + " cols-3"}>
-        <div className={styles.card}>
-          <div className={styles.cardHeader}><h2>Students</h2></div>
+        <div className={styles.card} style={{ background: "linear-gradient(135deg, #8b3b3b 0%, #a04848 100%)", border: "none", color: "white" }}>
+          <div className={styles.cardHeader} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)", background: "transparent" }}>
+            <h2 style={{ color: "white", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 20 }}>👨‍🎓</span> Students
+            </h2>
+          </div>
           <div className={styles.cardBody}>
-            <div className={styles.stat}><div className={styles.statLabel}>Total</div><div className={styles.statValue}>{studentsTotal}</div></div>
-            <div style={{ marginTop: 12 }}>
-              <Link className={styles.button} href="/dashboard/students">View Students</Link>
+            <div style={{ padding: 16, background: "rgba(255, 255, 255, 0.1)", borderRadius: 12, marginBottom: 16 }}>
+              <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.8)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Total Enrolled</div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "white", marginTop: 4 }}>{studentsTotal}</div>
             </div>
+            <Link className={styles.button} href="/dashboard/students" style={{ background: "white", color: "#8b3b3b", border: "none", width: "100%", textAlign: "center", fontWeight: 700 }}>
+              View All Students →
+            </Link>
           </div>
         </div>
-        <div className={styles.card}>
-          <div className={styles.cardHeader}><h2>Workers</h2></div>
+        
+        <div className={styles.card} style={{ background: "linear-gradient(135deg, #e6c57a 0%, #d4a960 100%)", border: "none", color: "white" }}>
+          <div className={styles.cardHeader} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)", background: "transparent" }}>
+            <h2 style={{ color: "white", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 20 }}>👷</span> Workers
+            </h2>
+          </div>
           <div className={styles.cardBody}>
-            <div className={styles.stat}><div className={styles.statLabel}>Total</div><div className={styles.statValue}>{workersTotal}</div></div>
-            <div style={{ marginTop: 12 }}>
-              <Link className={styles.button} href="/dashboard/workers">View Workers</Link>
+            <div style={{ padding: 16, background: "rgba(255, 255, 255, 0.1)", borderRadius: 12, marginBottom: 16 }}>
+              <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.8)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Total Staff</div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "white", marginTop: 4 }}>{workersTotal}</div>
             </div>
+            <Link className={styles.button} href="/dashboard/workers" style={{ background: "white", color: "#d4a960", border: "none", width: "100%", textAlign: "center", fontWeight: 700 }}>
+              View All Workers →
+            </Link>
           </div>
         </div>
+        
         <div className={styles.card}>
-          <div className={styles.cardHeader}><h2>Attendance</h2></div>
+          <div className={styles.cardHeader}>
+            <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 20 }}>📊</span> Attendance
+            </h2>
+          </div>
           <div className={styles.cardBody}>
             <AttendanceSummary />
           </div>
@@ -64,8 +91,6 @@ export default async function DashboardPage() {
       </section>
 
       <DoorStatusGrid />
-
-      {/* For brevity, reuse attendance/events elsewhere if needed */}
     </main>
   );
 }

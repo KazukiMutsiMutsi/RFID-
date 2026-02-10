@@ -56,12 +56,20 @@ enum StudentStatus {
   disabled
 }
 
+enum StudentType {
+  highschool
+  college
+}
+
 model Student {
   id                String        @id @default(cuid())
   name              String
   email             String        @unique
-  grade             Int
-  section           String
+  studentType       StudentType   @default(highschool)
+  grade             Int?
+  section           String?
+  college           String?
+  course            String?
   status            StudentStatus @default(active)
   tagId             String?
   location          String?
@@ -77,6 +85,7 @@ model Student {
   @@index([status])
   @@index([email])
   @@index([tagId])
+  @@index([studentType])
 }
 
 enum WorkerStatus {

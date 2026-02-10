@@ -7,8 +7,11 @@ interface Student {
   id: string;
   name: string;
   email: string;
-  grade: number;
-  section: string;
+  studentType: "highschool" | "college";
+  grade: number | null;
+  section: string | null;
+  college: string | null;
+  course: string | null;
   status: string;
   tagId: string | null;
   location: string | null;
@@ -95,9 +98,25 @@ export default function EditableProfile({ student }: { student: Student }) {
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-              <div className={styles.stat}><div className={styles.statLabel}>Grade</div><div className={styles.statValue}>{student.grade}</div></div>
-              <div className={styles.stat}><div className={styles.statLabel}>Section</div><div className={styles.statValue}>{student.section}</div></div>
+              <div className={styles.stat}>
+                <div className={styles.statLabel}>Type</div>
+                <div className={styles.statValue}>{student.studentType === "highschool" ? "High School" : "College"}</div>
+              </div>
+              {student.studentType === "highschool" ? (
+                <>
+                  <div className={styles.stat}><div className={styles.statLabel}>Grade</div><div className={styles.statValue}>{student.grade ?? "—"}</div></div>
+                  <div className={styles.stat}><div className={styles.statLabel}>Section</div><div className={styles.statValue}>{student.section ?? "—"}</div></div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.stat}><div className={styles.statLabel}>College</div><div className={styles.statValue}>{student.college ?? "—"}</div></div>
+                  <div className={styles.stat}><div className={styles.statLabel}>Course</div><div className={styles.statValue}>{student.course ?? "—"}</div></div>
+                </>
+              )}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginTop: 12 }}>
               <div className={styles.stat}><div className={styles.statLabel}>Tag</div><div className={styles.statValue}>{student.tagId ?? "—"}</div></div>
+              <div className={styles.stat}><div className={styles.statLabel}>Status</div><div className={styles.statValue}>{student.status}</div></div>
             </div>
           </div>
         </div>
