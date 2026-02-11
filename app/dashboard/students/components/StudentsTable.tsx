@@ -361,7 +361,8 @@ export default function StudentsTable() {
               justifyContent: "space-between",
               alignItems: "center"
             }}>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 28 }}>👨‍🎓</span>
                 {isAdding ? "Add New Student" : "Student Profile"}
               </h2>
               <button onClick={handleClose} style={{
@@ -671,7 +672,9 @@ export default function StudentsTable() {
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Signature</label>
+                    <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>
+                      <span style={{ marginRight: 6 }}>✍️</span>Signature
+                    </label>
                     <input 
                       className={styles.input}
                       placeholder="Type your signature"
@@ -777,10 +780,10 @@ export default function StudentsTable() {
                       <button 
                         className={styles.button}
                         onClick={handleSave}
-                        style={{ background: "#8b3b3b", color: "white" }}
+                        style={{ background: "#8b3b3b", color: "white", display: "flex", alignItems: "center", gap: 6 }}
                         disabled={!editForm?.name || !editForm?.email}
                       >
-                        {isAdding ? "Add Student" : "Save Changes"}
+                        <span>💾</span> {isAdding ? "Add Student" : "Save Changes"}
                       </button>
                     </div>
                   </>
@@ -796,9 +799,9 @@ export default function StudentsTable() {
                     <button 
                       className={styles.button}
                       onClick={handleEdit}
-                      style={{ background: "#8b3b3b", color: "white" }}
+                      style={{ background: "#8b3b3b", color: "white", display: "flex", alignItems: "center", gap: 6 }}
                     >
-                      Edit Profile
+                      <span>✏️</span> Edit Profile
                     </button>
                   </>
                 )}
