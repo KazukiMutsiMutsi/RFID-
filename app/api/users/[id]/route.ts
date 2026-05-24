@@ -1,39 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const admin = db.admins.find(a => a.id === params.id);
+  if (!admin) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const { password: _pw, ...safe } = admin;
+  return NextResponse.json({ user: safe });
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const idx = db.admins.findIndex(a => a.id === params.id);
+  if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
   try {
-    const { id } = await params;
     const body = await req.json();
-    const { name, email, role, password } = body;
-
-    // In a real app, update the user in the database
-    const updatedUser = {
-      id,
-      name,
-      email,
-      role,
-      status: "active" as const,
-      lastLogin: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-    };
-
-    return NextResponse.json({ user: updatedUser });
-  } catch (error) {
-    console.error("Update user error:", error);
-    return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
+    db.admins[idx] = { ...db.admins[idx], ...body, id: params.id };
+    const { password: _pw2, ...safe } = db.admins[idx];
+    return NextResponse.json({ user: safe });
+  } catch {
+    return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const { id } = await params;
-    
-    // In a real app, delete the user from the database
-    return NextResponse.json({ success: true, message: "User deleted" });
-  } catch (error) {
-    console.error("Delete user error:", error);
-    return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
-  }
+export async function DELETE(_req2: NextRequest, { params }: { params: { id: string } }) {
+  const idx = db.admins.findIndex(a => a.id === params.id);
+  if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  db.admins.splice(idx, 1);
+  return NextResponse.json({ ok: true });
 }

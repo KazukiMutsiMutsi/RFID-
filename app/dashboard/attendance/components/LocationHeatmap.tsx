@@ -130,12 +130,5 @@ export default function LocationHeatmap() {
 function generateMockLocations(): LocationData[] {
   return [
     { name: "Main Gate", count: 45, capacity: 100, status: "normal", recentActivity: 3 },
-    { name: "Library", count: 78, capacity: 80, status: "crowded", recentActivity: 5 },
-    { name: "Cafeteria", count: 120, capacity: 150, status: "crowded", recentActivity: 12 },
-    { name: "Gym", count: 35, capacity: 60, status: "normal", recentActivity: 2 },
-    { name: "Science Lab", count: 28, capacity: 30, status: "crowded", recentActivity: 1 },
-    { name: "Computer Lab", count: 42, capacity: 50, status: "normal", recentActivity: 0 },
-    { name: "Auditorium", count: 200, capacity: 200, status: "full", recentActivity: 8 },
-    { name: "Playground", count: 65, capacity: 200, status: "normal", recentActivity: 4 },
   ];
 }

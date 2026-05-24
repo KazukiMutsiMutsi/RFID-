@@ -1,59 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-// Mock search function
-function searchStudents(query: string) {
-  const locations = ["Main Gate", "Library", "Gym", "Cafeteria", "Science Lab", "Computer Lab"];
-  const sections = ["A", "B", "C"];
-  const names = [
-    "John Smith", "Emma Johnson", "Michael Brown", "Sophia Davis", "James Wilson",
-    "Olivia Martinez", "William Anderson", "Ava Taylor", "Robert Thomas", "Isabella Garcia",
-  ];
-
-  const results: any[] = [];
-  const lowerQuery = query.toLowerCase();
-
-  // Generate some matching results
-  for (let i = 0; i < 5; i++) {
-    const name = names[i % names.length];
-    const grade = 7 + (i % 6);
-    const studentId = `STU${grade}${String(i + 1).padStart(3, "0")}`;
-    
-    // Check if matches query
-    if (
-      name.toLowerCase().includes(lowerQuery) ||
-      studentId.toLowerCase().includes(lowerQuery)
-    ) {
-      results.push({
-        studentId,
-        studentName: name,
-        grade,
-        section: sections[i % sections.length],
-        currentLocation: locations[i % locations.length],
-        lastSeen: new Date(Date.now() - Math.random() * 2 * 60 * 60 * 1000).toISOString(),
-        status: Math.random() > 0.2 ? "present" : "absent",
-      });
-    }
-  }
-
-  return results;
-}
+const LEVEL_MAP: Record<string, string> = {
+  elementary: "Elementary", highschool: "High School",
+  seniorhigh: "Senior High", college: "College",
+};
 
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const query = searchParams.get("q");
+  const query = (new URL(req.url).searchParams.get("q") || "").toLowerCase().trim();
+  if (!query) return NextResponse.json({ results: [] });
 
-    if (!query) {
-      return NextResponse.json({ results: [] });
-    }
+  const matched = db.students
+    .filter(s =>
+      s.name.toLowerCase().includes(query) ||
+      s.id.toLowerCase().includes(query) ||
+      (s.tagId || "").toLowerCase().includes(query) ||
+      s.email.toLowerCase().includes(query)
+    )
+    .slice(0, 10)
+    .map(s => ({
+      studentId:       s.id,
+      studentName:     s.name,
+      level:           LEVEL_MAP[s.studentType] ?? s.studentType,
+      grade:           s.grade,
+      section:         s.section,
+      tagId:           s.tagId,
+      currentLocation: s.lastSeen ? "Main Gate" : null,
+      lastSeen:        s.lastSeen,
+      status:          s.status === "active" ? "present" : "absent",
+    }));
 
-    const results = searchStudents(query);
-
-    return NextResponse.json({ results });
-  } catch (error) {
-    console.error("Search API error:", error);
-    return NextResponse.json({ error: "Search failed" }, { status: 500 });
-  }
+  return NextResponse.json({ results: matched });
 }

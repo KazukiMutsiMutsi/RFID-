@@ -1,76 +1,89 @@
 import { NextRequest, NextResponse } from "next/server";
+import { db, type Student } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-// Mock data generator for attendance
-function generateMockAttendance(date: string, grade?: string, status?: string) {
-  const locations = ["Main Gate", "Library", "Gym", "Cafeteria", "Science Lab", "Computer Lab", "Auditorium"];
-  const sections = ["A", "B", "C"];
-  const statuses: Array<"present" | "absent" | "late" | "excused"> = ["present", "absent", "late", "excused"];
-  const names = [
-    "John Smith", "Emma Johnson", "Michael Brown", "Sophia Davis", "James Wilson",
-    "Olivia Martinez", "William Anderson", "Ava Taylor", "Robert Thomas", "Isabella Garcia",
-    "David Rodriguez", "Mia Hernandez", "Joseph Moore", "Charlotte Martin", "Daniel Lee",
-    "Amelia White", "Matthew Harris", "Harper Clark", "Christopher Lewis", "Evelyn Walker",
-  ];
+const LEVEL_MAP: Record<string, string> = {
+  elementary: "Elementary", highschool: "High School",
+  seniorhigh: "Senior High", college: "College",
+};
 
-  const records: any[] = [];
-  let idCounter = 1;
+const STATUS_WEIGHTS = [
+  { status: "present", weight: 70 },
+  { status: "late",    weight: 15 },
+  { status: "absent",  weight: 12 },
+  { status: "excused", weight: 3  },
+] as const;
 
-  const grades = grade ? [Number(grade)] : [7, 8, 9, 10, 11, 12];
+type AttendanceStatus = "present" | "late" | "absent" | "excused";
 
-  for (const g of grades) {
-    for (let i = 0; i < 20; i++) {
-      const studentStatus = statuses[Math.floor(Math.random() * statuses.length)];
-      
-      // Apply status filter
-      if (status && studentStatus !== status) continue;
-      
-      const isPresent = studentStatus === "present" || studentStatus === "late";
-      const checkInTime = isPresent ? new Date(Date.now() - Math.random() * 4 * 60 * 60 * 1000) : null;
-      
-      records.push({
-        id: `att-${idCounter++}`,
-        studentId: `STU${g}${String(i + 1).padStart(3, "0")}`,
-        studentName: names[Math.floor(Math.random() * names.length)],
-        grade: g,
-        section: sections[Math.floor(Math.random() * sections.length)],
-        status: studentStatus,
-        location: isPresent ? locations[Math.floor(Math.random() * locations.length)] : null,
-        checkInTime: checkInTime?.toISOString() || null,
-        checkOutTime: null,
-        lastSeen: isPresent ? new Date(Date.now() - Math.random() * 60 * 60 * 1000).toISOString() : null,
-      });
-    }
+type AttendanceRecord = {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentType: string;
+  level: string;
+  grade: number | null;
+  section: string | null;
+  status: AttendanceStatus;
+  location: string | null;
+  checkInTime: string | null;
+  checkOutTime: null;
+  lastSeen: string | null;
+};
+
+function pickStatus(seed: number): AttendanceStatus {
+  const roll = seed % 100;
+  let acc = 0;
+  for (const { status, weight } of STATUS_WEIGHTS) {
+    acc += weight;
+    if (roll < acc) return status;
   }
-
-  return records;
+  return "present";
 }
 
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const date = searchParams.get("date") || new Date().toISOString().split("T")[0];
-    const grade = searchParams.get("grade") || "";
-    const status = searchParams.get("status") || "";
+  const url         = new URL(req.url);
+  const date        = url.searchParams.get("date") || new Date().toISOString().split("T")[0];
+  const filterGrade = url.searchParams.get("grade") || "";
+  const filterStatus= url.searchParams.get("status") || "";
+  const search      = (url.searchParams.get("search") || "").toLowerCase();
 
-    const records = generateMockAttendance(date, grade, status);
+  const dateSeed = date.replace(/-/g, "").slice(-4);
+  const seedNum  = parseInt(dateSeed, 10) || 1;
 
-    const summary = {
-      total: records.length,
-      present: records.filter((r) => r.status === "present").length,
-      absent: records.filter((r) => r.status === "absent").length,
-      late: records.filter((r) => r.status === "late").length,
-      excused: records.filter((r) => r.status === "excused").length,
-    };
+  const locations = ["Main Gate", "Cafeteria", "Science Lab", "Computer Lab", "Auditorium"];
 
-    return NextResponse.json({
-      records,
-      date,
-      summary,
+  let records: AttendanceRecord[] = db.students
+    .filter((s: Student) => s.status === "active")
+    .map((s: Student, i: number): AttendanceRecord => {
+      const statusSeed = (i * 7 + seedNum) % 100;
+      const status     = pickStatus(statusSeed);
+      const isPresent  = status === "present" || status === "late";
+      const checkIn    = isPresent
+        ? new Date(new Date(date + "T07:00:00").getTime() + (i % 90) * 60_000).toISOString()
+        : null;
+      return {
+        id:           `att-${date}-${s.id}`,
+        studentId:    s.id,
+        studentName:  s.name,
+        studentType:  s.studentType,
+        level:        LEVEL_MAP[s.studentType] ?? s.studentType,
+        grade:        s.grade,
+        section:      s.section,
+        status,
+        location:     isPresent ? locations[i % locations.length] : null,
+        checkInTime:  checkIn,
+        checkOutTime: null,
+        lastSeen:     isPresent
+          ? new Date(new Date(date + "T07:00:00").getTime() + (i % 120) * 60_000 + 3_600_000).toISOString()
+          : null,
+      };
     });
-  } catch (error) {
-    console.error("Attendance API error:", error);
-    return NextResponse.json({ error: "Failed to fetch attendance" }, { status: 500 });
-  }
+
+  if (search)       records = records.filter((r: AttendanceRecord) => r.studentName.toLowerCase().includes(search) || r.studentId.toLowerCase().includes(search));
+  if (filterGrade)  { const g = parseInt(filterGrade, 10); records = records.filter((r: AttendanceRecord) => r.grade === g); }
+  if (filterStatus) records = records.filter((r: AttendanceRecord) => r.status === filterStatus);
+
+  return NextResponse.json({ records, date }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -4,11 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles from "../../styles.module.css";
 
+type StudentType = "elementary" | "highschool" | "seniorhigh" | "college";
+
 type Student = {
   id: string;
   name: string;
   email: string;
-  studentType: "highschool" | "college";
+  studentType: StudentType;
   grade?: number | null;
   section?: string | null;
   college?: string | null;
@@ -18,6 +20,126 @@ type Student = {
   lastSeen: string | null;
   photoUrl?: string;
 };
+
+// Sub-level options per student type
+const LEVEL_SUBLEVEL: Record<StudentType, { label: string; value: string }[]> = {
+  elementary: [1, 2, 3, 4, 5, 6].map((g) => ({ label: `Grade ${g}`, value: String(g) })),
+  highschool: [7, 8, 9, 10].map((g) => ({ label: `Grade ${g}`, value: String(g) })),
+  seniorhigh: [11, 12].map((g) => ({ label: `Grade ${g}`, value: String(g) })),
+  college: [
+    { label: "1st Year", value: "1" },
+    { label: "2nd Year", value: "2" },
+    { label: "3rd Year", value: "3" },
+    { label: "4th Year", value: "4" },
+  ],
+};
+
+const LEVEL_LABELS: Record<StudentType, string> = {
+  elementary: "Elementary",
+  highschool: "High School",
+  seniorhigh: "Senior High",
+  college: "College",
+};
+
+const LEVEL_COLORS: Record<StudentType, { bg: string; text: string }> = {
+  elementary: { bg: "#d1fae5", text: "#065f46" },
+  highschool: { bg: "#dbeafe", text: "#1e40af" },
+  seniorhigh: { bg: "#ede9fe", text: "#5b21b6" },
+  college:    { bg: "#fef3c7", text: "#92400e" },
+};
+
+// All college courses grouped for the filter dropdown
+const COLLEGE_COURSES: { group: string; courses: string[] }[] = [
+  {
+    group: "Computer Studies",
+    courses: [
+      "BS Information Technology (BSIT)",
+      "BS Computer Science (BSCS)",
+      "BS Information Systems (BSIS)",
+      "BS Computer Engineering (BSCpE)",
+    ],
+  },
+  {
+    group: "Engineering",
+    courses: [
+      "BS Civil Engineering (BSCE)",
+      "BS Electrical Engineering (BSEE)",
+      "BS Mechanical Engineering (BSME)",
+      "BS Electronics Engineering (BSECE)",
+      "BS Industrial Engineering (BSIE)",
+    ],
+  },
+  {
+    group: "Business",
+    courses: [
+      "BS Business Administration (BSBA)",
+      "BS Accountancy (BSA)",
+      "BS Management Accounting (BSMA)",
+      "BS Entrepreneurship",
+      "BS Marketing Management",
+    ],
+  },
+  {
+    group: "Education",
+    courses: [
+      "Bachelor of Elementary Education (BEEd)",
+      "Bachelor of Secondary Education (BSEd)",
+      "Bachelor of Physical Education (BPEd)",
+      "Bachelor of Special Needs Education (BSNEd)",
+    ],
+  },
+  {
+    group: "Health Sciences",
+    courses: [
+      "BS Nursing (BSN)",
+      "BS Pharmacy",
+      "BS Medical Technology",
+      "BS Physical Therapy",
+      "Doctor of Medicine (MD)",
+    ],
+  },
+  {
+    group: "Arts & Sciences",
+    courses: [
+      "BS Psychology (BSPsych)",
+      "AB Communication",
+      "AB English",
+      "BS Biology",
+      "BS Mathematics",
+    ],
+  },
+  {
+    group: "Architecture & Design",
+    courses: [
+      "BS Architecture (BSArch)",
+      "BS Interior Design",
+      "BS Landscape Architecture",
+    ],
+  },
+  {
+    group: "Agriculture",
+    courses: [
+      "BS Agriculture",
+      "BS Agricultural Engineering",
+      "BS Forestry",
+    ],
+  },
+  {
+    group: "Hospitality & Tourism",
+    courses: [
+      "BS Hospitality Management (BSHM)",
+      "BS Tourism Management (BSTM)",
+      "BS Hotel and Restaurant Management",
+    ],
+  },
+  {
+    group: "Law & Criminology",
+    courses: [
+      "Bachelor of Laws (LLB)",
+      "BS Criminology",
+    ],
+  },
+];
 
 type ResponseList = {
   data: Student[];
@@ -33,7 +155,9 @@ export default function StudentsTable() {
   const [total, setTotal] = useState(0);
 
   const [search, setSearch] = useState("");
-  const [grade, setGrade] = useState("");
+  const [levelFilter, setLevelFilter] = useState<StudentType | "">("");
+  const [subLevelFilter, setSubLevelFilter] = useState("");
+  const [courseFilter, setCourseFilter] = useState("");
   const [status, setStatus] = useState("");
 
   const [loading, setLoading] = useState(true);
@@ -57,7 +181,9 @@ export default function StudentsTable() {
       try {
         const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
         if (search) params.set("search", search);
-        if (grade) params.set("grade", grade);
+        if (levelFilter) params.set("studentType", levelFilter);
+        if (subLevelFilter) params.set("grade", subLevelFilter);
+        if (courseFilter) params.set("course", courseFilter);
         if (status) params.set("status", status);
 
         const res = await fetch(`/api/students?${params.toString()}`, { cache: "no-store" });
@@ -74,7 +200,7 @@ export default function StudentsTable() {
       }
     };
     fetchStudents();
-  }, [page, pageSize, search, grade, status]);
+  }, [page, pageSize, search, levelFilter, subLevelFilter, courseFilter, status]);
 
   const handleView = (student: Student) => {
     setSelectedStudent(student);
@@ -95,8 +221,8 @@ export default function StudentsTable() {
       id: `temp-${Date.now()}`,
       name: "",
       email: "",
-      studentType: "highschool",
-      grade: 7,
+      studentType: "elementary",
+      grade: 1,
       section: "A",
       college: "",
       course: "",
@@ -217,10 +343,55 @@ export default function StudentsTable() {
           <h2>Students</h2>
           <div className={styles.controls}>
             <input className={styles.input} placeholder="Search name/email/tag" value={search} onChange={(e) => { setPage(1); setSearch(e.target.value); }} />
-            <select className={styles.select} value={grade} onChange={(e) => { setPage(1); setGrade(e.target.value); }}>
-              <option value="">All grades</option>
-              {[7, 8, 9, 10, 11, 12].map((g) => <option key={g} value={g}>{g}</option>)}
+            {/* Level dropdown */}
+            <select
+              className={styles.select}
+              value={levelFilter}
+              onChange={(e) => {
+                setPage(1);
+                setLevelFilter(e.target.value as StudentType | "");
+                setSubLevelFilter("");
+                setCourseFilter("");
+              }}
+            >
+              <option value="">All Levels</option>
+              <option value="elementary">Elementary</option>
+              <option value="highschool">High School</option>
+              <option value="seniorhigh">Senior High</option>
+              <option value="college">College</option>
             </select>
+            {/* Sub-level dropdown — only shown when a level is selected */}
+            {levelFilter && (
+              <select
+                className={styles.select}
+                value={subLevelFilter}
+                onChange={(e) => { setPage(1); setSubLevelFilter(e.target.value); }}
+              >
+                <option value="">
+                  {levelFilter === "college" ? "All Years" : "All Grades"}
+                </option>
+                {LEVEL_SUBLEVEL[levelFilter].map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            )}
+            {/* Course dropdown — only shown when College is selected */}
+            {levelFilter === "college" && (
+              <select
+                className={styles.select}
+                value={courseFilter}
+                onChange={(e) => { setPage(1); setCourseFilter(e.target.value); }}
+              >
+                <option value="">All Courses</option>
+                {COLLEGE_COURSES.map((group) => (
+                  <optgroup key={group.group} label={group.group}>
+                    {group.courses.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            )}
             <select className={styles.select} value={status} onChange={(e) => { setPage(1); setStatus(e.target.value); }}>
               <option value="">All status</option>
               <option value="active">Active</option>
@@ -285,12 +456,16 @@ export default function StudentsTable() {
                           </div>
                         </td>
                         <td>
-                          <span className={styles.badge} style={{ background: s.studentType === "highschool" ? "#dbeafe" : "#fef3c7", color: s.studentType === "highschool" ? "#1e40af" : "#92400e" }}>
-                            {s.studentType === "highschool" ? "High School" : "College"}
+                          <span className={styles.badge} style={{ background: LEVEL_COLORS[s.studentType]?.bg ?? "#f3f4f6", color: LEVEL_COLORS[s.studentType]?.text ?? "#374151" }}>
+                            {LEVEL_LABELS[s.studentType] ?? s.studentType}
                           </span>
                         </td>
-                        <td>{s.studentType === "highschool" ? (s.grade || "—") : "—"}</td>
-                        <td>{s.studentType === "highschool" ? (s.section || "—") : (s.course || "—")}</td>
+                        <td>
+                          {s.studentType === "college"
+                            ? (s.grade ? `Year ${s.grade}` : "—")
+                            : (s.grade ? `Grade ${s.grade}` : "—")}
+                        </td>
+                        <td>{s.studentType === "college" ? (s.course || "—") : (s.section || "—")}</td>
                         <td>
                           <span className={styles.badge + " " + (s.status === "active" ? styles.statusOnline : styles.statusOffline)}>
                             {s.status}
@@ -482,21 +657,29 @@ export default function StudentsTable() {
                   <div style={{ borderTop: "1px solid #e5e7eb", margin: "8px 0" }} />
                   
                   <div>
-                    <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Student Type</label>
+                    <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Student Level</label>
                     <select 
                       className={styles.select}
                       value={editForm.studentType}
-                      onChange={(e) => setEditForm({ 
-                        ...editForm, 
-                        studentType: e.target.value as "highschool" | "college",
-                        // Reset fields when switching type
-                        grade: e.target.value === "highschool" ? 7 : null,
-                        section: e.target.value === "highschool" ? "A" : null,
-                        college: e.target.value === "college" ? "" : null,
-                        course: e.target.value === "college" ? "" : null,
-                      })}
+                      onChange={(e) => {
+                        const t = e.target.value as StudentType;
+                        const defaultGrade = t === "elementary" ? 1
+                          : t === "highschool" ? 7
+                          : t === "seniorhigh" ? 11
+                          : 1;
+                        setEditForm({ 
+                          ...editForm, 
+                          studentType: t,
+                          grade: t !== "college" ? defaultGrade : null,
+                          section: t !== "college" ? "A" : null,
+                          college: t === "college" ? "" : null,
+                          course: t === "college" ? "" : null,
+                        });
+                      }}
                     >
+                      <option value="elementary">Elementary</option>
                       <option value="highschool">High School</option>
+                      <option value="seniorhigh">Senior High</option>
                       <option value="college">College</option>
                     </select>
                   </div>
@@ -518,16 +701,20 @@ export default function StudentsTable() {
                     />
                   </div>
                   
-                  {editForm.studentType === "highschool" ? (
+                  {editForm.studentType !== "college" ? (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                       <div>
-                        <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Grade</label>
+                        <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>
+                          {editForm.studentType === "elementary" ? "Grade (1–6)" : editForm.studentType === "seniorhigh" ? "Grade (11–12)" : "Grade (7–10)"}
+                        </label>
                         <select 
                           className={styles.select}
-                          value={editForm.grade || 7}
+                          value={editForm.grade ?? LEVEL_SUBLEVEL[editForm.studentType][0].value}
                           onChange={(e) => setEditForm({ ...editForm, grade: Number(e.target.value) })}
                         >
-                          {[7, 8, 9, 10, 11, 12].map((g) => <option key={g} value={g}>{g}</option>)}
+                          {LEVEL_SUBLEVEL[editForm.studentType].map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                       </div>
                       <div>
@@ -540,26 +727,40 @@ export default function StudentsTable() {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                      <div>
-                        <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>College</label>
-                        <select 
-                          className={styles.select}
-                          value={editForm.college || ""}
-                          onChange={(e) => setEditForm({ ...editForm, college: e.target.value })}
-                        >
-                          <option value="">Select College</option>
-                          <option value="College of Engineering">College of Engineering</option>
-                          <option value="College of Computer Studies">College of Computer Studies</option>
-                          <option value="College of Arts and Sciences">College of Arts and Sciences</option>
-                          <option value="College of Business Administration">College of Business Administration</option>
-                          <option value="College of Education">College of Education</option>
-                          <option value="College of Nursing">College of Nursing</option>
-                          <option value="College of Architecture">College of Architecture</option>
-                          <option value="College of Law">College of Law</option>
-                          <option value="College of Medicine">College of Medicine</option>
-                          <option value="College of Agriculture">College of Agriculture</option>
-                        </select>
+                    <div style={{ display: "grid", gap: 12 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        <div>
+                          <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Year Level</label>
+                          <select
+                            className={styles.select}
+                            value={editForm.grade ?? 1}
+                            onChange={(e) => setEditForm({ ...editForm, grade: Number(e.target.value) })}
+                          >
+                            {LEVEL_SUBLEVEL.college.map((opt) => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>College</label>
+                          <select 
+                            className={styles.select}
+                            value={editForm.college || ""}
+                            onChange={(e) => setEditForm({ ...editForm, college: e.target.value })}
+                          >
+                            <option value="">Select College</option>
+                            <option value="College of Engineering">College of Engineering</option>
+                            <option value="College of Computer Studies">College of Computer Studies</option>
+                            <option value="College of Arts and Sciences">College of Arts and Sciences</option>
+                            <option value="College of Business Administration">College of Business Administration</option>
+                            <option value="College of Education">College of Education</option>
+                            <option value="College of Nursing">College of Nursing</option>
+                            <option value="College of Architecture">College of Architecture</option>
+                            <option value="College of Law">College of Law</option>
+                            <option value="College of Medicine">College of Medicine</option>
+                            <option value="College of Agriculture">College of Agriculture</option>
+                          </select>
+                        </div>
                       </div>
                       <div>
                         <label style={{ display: "block", fontWeight: 600, marginBottom: 6, fontSize: 14 }}>Course</label>
@@ -710,15 +911,15 @@ export default function StudentsTable() {
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
                     <span style={{ fontWeight: 600, color: "#6b7280" }}>Type:</span>
-                    <span className={styles.badge} style={{ background: selectedStudent.studentType === "highschool" ? "#dbeafe" : "#fef3c7", color: selectedStudent.studentType === "highschool" ? "#1e40af" : "#92400e", width: "fit-content" }}>
-                      {selectedStudent.studentType === "highschool" ? "High School" : "College"}
+                    <span className={styles.badge} style={{ background: LEVEL_COLORS[selectedStudent.studentType]?.bg ?? "#f3f4f6", color: LEVEL_COLORS[selectedStudent.studentType]?.text ?? "#374151", width: "fit-content" }}>
+                      {LEVEL_LABELS[selectedStudent.studentType] ?? selectedStudent.studentType}
                     </span>
                   </div>
-                  {selectedStudent.studentType === "highschool" ? (
+                  {selectedStudent.studentType !== "college" ? (
                     <>
                       <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
                         <span style={{ fontWeight: 600, color: "#6b7280" }}>Grade:</span>
-                        <span>{selectedStudent.grade || "—"}</span>
+                        <span>{selectedStudent.grade ? `Grade ${selectedStudent.grade}` : "—"}</span>
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
                         <span style={{ fontWeight: 600, color: "#6b7280" }}>Section:</span>
@@ -727,6 +928,10 @@ export default function StudentsTable() {
                     </>
                   ) : (
                     <>
+                      <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontWeight: 600, color: "#6b7280" }}>Year:</span>
+                        <span>{selectedStudent.grade ? `${selectedStudent.grade}${["st","nd","rd","th"][Math.min(selectedStudent.grade - 1, 3)]} Year` : "—"}</span>
+                      </div>
                       <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8, alignItems: "center" }}>
                         <span style={{ fontWeight: 600, color: "#6b7280" }}>College:</span>
                         <span>{selectedStudent.college || "—"}</span>

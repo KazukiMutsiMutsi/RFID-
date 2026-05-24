@@ -3,27 +3,21 @@ import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
-  const tag = db.tags.find(t => t.id === params.id);
-  if (!tag) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ tag });
-}
-
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const idx = db.tags.findIndex(t => t.id === params.id);
+  const idx = db.holidays.findIndex(h => h.id === params.id);
   if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
   try {
     const body = await req.json();
-    db.tags[idx] = { ...db.tags[idx], ...body, id: params.id };
-    return NextResponse.json({ tag: db.tags[idx] });
+    db.holidays[idx] = { ...db.holidays[idx], ...body, id: params.id };
+    return NextResponse.json({ holiday: db.holidays[idx] });
   } catch {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 }
 
 export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
-  const idx = db.tags.findIndex(t => t.id === params.id);
+  const idx = db.holidays.findIndex(h => h.id === params.id);
   if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  db.tags.splice(idx, 1);
+  db.holidays.splice(idx, 1);
   return NextResponse.json({ ok: true });
 }
